@@ -11,7 +11,7 @@ class ImgInputBlock(Block3D):
     @property
     def tex(self) -> str:
         return f"""
-\\node[canvas is zy plane at x=0] ({self.name}) at {self.to} {{\includegraphics[width={self.args['width'] / CM_FACTOR}cm, height={self.args['height'] / CM_FACTOR}cm]{{{self.file_path}}}}};
+\\node[canvas is zy plane at x=0] ({self.name}) at {self.to} {{\includegraphics[width={self.args['depth'] / CM_FACTOR}cm, height={self.args['height'] / CM_FACTOR}cm]{{{self.file_path}}}}};
 """
 
 class VecInputBlock(Block1D):

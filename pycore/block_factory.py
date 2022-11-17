@@ -18,32 +18,33 @@ class BlockFactory:
         self.image_path = image_path
 
         self.to = (0,0,0)
-        self.current_offset = np.array((0,0,0))
+        self.current_offset = np.zeros(3)
         self.last_block_id = 0
     
     def create(self, block_class, i: int) -> Block:
         new_block = block_class(
                  i,
                  size = self.size,
-                 scale_factor = self.scale_factor,
                  offset = self.current_offset,
                  to = self.to)
-        self.to = new_block.name
+        self.to = f'({new_block.name}-east)'
         self.last_block_id = i
+        self.current_offset = np.zeros(3)
         return new_block
     
-    def create_input(self, tensor: Tensor) -> Block:
+    def create_input(self, x: Tensor) -> Block:
         if isinstance(self.to, Block):
             to = f'({self.to.name}-east)'
         else:
-            to = tuple(self.to)
-        
-        self.current_offset += np.array((0, self.size[1] + self.offset, 0))
+            to = self.to
+    
+        self.current_offset += np.array((0.0, self.size[1] + self.offset, 0.0))
         offset = tuple(self.current_offset)
+        self.current_offset = np.zeros(3)
 
-        if tensor.ndim > 3:
+        if x.ndim > 3:
             im_path = self.image_path.replace('{i}', str(self.last_block_id + 1))
-            save_image(tensor[0], im_path)
+            save_image(x[0], im_path)
             return ImgInputBlock(self.last_block_id + 1,
                          im_path,
                          to=to,
@@ -59,7 +60,7 @@ class BlockFactory:
     def add_gap(self, axis=0):
         offset = np.zeros(3)
         offset[axis] = self.offset
-        self.current_offset += offset
+        self.current_offset = self.current_offset + offset
     
     def scale(self, scale: np.ndarray):
-        self.size *= scale
+        self.size = self.size * (scale / self.scale_factor)

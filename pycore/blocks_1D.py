@@ -27,6 +27,6 @@ class EmbeddingBlock(Block1D):
 class LSTMBlock(Block1D):
 
     def __init__(self, name, **kwargs) -> None:
-        super().__init__(f'Embedding_{name}',
+        super().__init__(f'LSTM_{name}',
                          fill=COLOR.LSTM,
                          **kwargs)

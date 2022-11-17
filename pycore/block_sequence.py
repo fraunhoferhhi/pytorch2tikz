@@ -1,5 +1,6 @@
 from typing import List, Generator
 from torch import nn, Tensor
+import numpy as np
 
 from .block_factory import BlockFactory
 from .blocks_abcs import Block, Connection
@@ -25,6 +26,7 @@ class BlockSequence:
 
         self._fuseable_layers = ['conv', 'linear']
         self._seen_modules = {}
+        self._added_gap = False
 
     def append(self, module: nn.Module):
         """appends the modules buffer if module should not be ignored ans was not seen before. If module is not fuseable call self.flush()
@@ -36,8 +38,10 @@ class BlockSequence:
             return
 
         for l in self.ignore_layers:
-            if l not in str(type(module)):
-                self.buffer.append(module)
+            if l in str(type(module)):
+                return
+
+        self.buffer.append(module)
         
         fuseable = False
         for l in self._fuseable_layers:
@@ -48,25 +52,27 @@ class BlockSequence:
         if not fuseable:
             self.flush()
     
-    def append_input(self, tensor: Tensor, module: nn.Module):
+    def append_input(self, x: Tensor, module: nn.Module):
         if module not in self._seen_modules.keys():
-            input_block = self.block_factory.create_input(input)
+            input_block = self.block_factory.create_input(x)
             self.blocks.append(input_block)
             self.last_blocks.append(input_block)
 
     def append_block(self, block: Block):
         self.blocks.append(block)
         for b in self.last_blocks:
-            if not b.is_input:
+            if not b.is_input and self._added_gap:
                 self.connect(b, block)
         self.last_blocks = [block]
+        self._added_gap = False
 
     def flush(self):
         """translate modules in self.buffer to blocks in self.blocks and connections in self.connections"""
+
         # if buffer has only one entry add block
         if len(self.buffer) == 1:
             new_block_type = self.get_block_type(self.buffer[0])
-            return
+
         elif len(self.buffer) == 2:
             # if buffer has fuseable entries
             fuse_conv = 'conv' in str(type(self.buffer[0]))
@@ -78,14 +84,30 @@ class BlockSequence:
             elif fuse_linear and fuseable:
                 new_block_type = LinearActivationBlock
             else:
-                raise Exception(f'unable to fuse {self.buffer[0].__class__.__name__} with {self.buffer[1].__class__.__name__}')
+                for m in self.buffer:
+                    new_block = self.block_factory.create(self.get_block_type(m), len(self.blocks))
+                    self._seen_modules[m] = new_block
+                    self.append_block(new_block)
+                self.buffer = []
+                return
         else:
             raise Exception(f'buffer has untypical length of {len(self.buffer)}')
 
+        print('create', new_block_type.__name__.ljust(20), 'for', **self.buffer)
+        
         new_block = self.block_factory.create(new_block_type, len(self.blocks))
         self.append_block(new_block)
+        self._seen_modules[self.buffer[0]] = new_block
         self.buffer = []
     
+    def scale(self, scale: np.ndarray):
+        if len(self.blocks) > 1:
+            self.block_factory.scale(scale)
+    
+    def add_gap(self, axis=0):
+        self._added_gap = True
+        self.block_factory.add_gap(axis)
+
     def connect(self, block1, block2) -> None:
         if not isinstance(block1, ImgInputBlock) and not isinstance(block2, ImgInputBlock):
             self.connections.append(Connection(block1, block2))

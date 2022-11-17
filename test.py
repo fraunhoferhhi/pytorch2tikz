@@ -42,5 +42,5 @@ if __name__ == '__main__':
 
     tex = arch.finalize()
 
-    with open('test_out.tex') as f:
+    with open('test_out.tex', 'w') as f:
         f.write(tex)

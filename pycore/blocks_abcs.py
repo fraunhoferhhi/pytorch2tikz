@@ -1,10 +1,23 @@
 from enum import Enum
 from typing import Iterable, Tuple
 import numpy as np
+from abc import abstractmethod
 
 from .constants import CM_FACTOR, COLOR, PICTYPE
 
-class Block:
+class TexElement:
+    @property
+    @abstractmethod
+    def tex(self):
+        return ''
+    
+    def __repr__(self) -> str:
+        return self.__class__.__name__
+
+    def __str__(self) -> str:
+        return self.tex
+
+class Block(TexElement):
     @property
     def size(self) -> Tuple[int]:
         return tuple((self.args['width'], self.args['height'], self.args['depth']))
@@ -54,6 +67,7 @@ class Block:
                  xlabel: Iterable[int] = None,
                  zlabel: int = None,
                  is_input = False) -> None:
+        super().__init__()
         self.name = name
         self.pictype = pictype
         self.offset = np.array(offset)
@@ -67,9 +81,9 @@ class Block:
             "caption": caption
         }
 
-        self.size = size
-        self.default_size = default_size
         self.scale_factor = scale_factor
+        self.default_size = default_size
+        self.size = size
         
         if bandfill is not None:
             self.args["bandfill"] = bandfill
@@ -80,12 +94,6 @@ class Block:
             self.args['xlabel'] = xlabel
         if zlabel is not None:
             self.args['zlabel'] = zlabel
-    
-    def __repr__(self) -> str:
-        return self.__class__.__name__
-
-    def __str__(self) -> str:
-        return self.tex
 
 class Block3D(Block):
     pass
@@ -99,7 +107,7 @@ class Block1D(Block):
     def size(self, size: Iterable[int]):
         self.args["width"] = self.default_size[0]
         self.args["height"] = self.default_size[1]
-        self.args["depth"] = size[2]
+        self.args["depth"] = size[2] * self.scale_factor
 
 class Block2D(Block):
     @property
@@ -109,13 +117,14 @@ class Block2D(Block):
     @size.setter
     def size(self, size: Iterable[int]):
         self.args["width"] = self.default_size[0]
-        self.args["height"] = size[1]
-        self.args["depth"] = size[2]
+        self.args["height"] = size[1] * self.scale_factor
+        self.args["depth"] = size[2] * self.scale_factor
 
 
-class Connection:
+class Connection(TexElement):
     
     def __init__(self, block1: Block3D, block2: Block3D, direction='lr') -> None:
+        super().__init__()
         self.name1 = f'{block1.name}-east'
         self.name2 = f'{block2.name}-west'
         

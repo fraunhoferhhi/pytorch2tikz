@@ -36,7 +36,7 @@ class Architecure:
         out_ptr = output.data_ptr()
         
         last_in_equals_out = False
-        print(type(module), self._last_data_ptr, in_ptr, self._last_data_ptr == in_ptr)
+        # print(type(module), self._last_data_ptr, in_ptr, self._last_data_ptr == in_ptr)
         if self._last_data_ptr is not None:
             last_in_equals_out = self._last_data_ptr == in_ptr or 'activation' in str(type(module))
             pass
@@ -53,9 +53,17 @@ class Architecure:
             same_depth = False
 
         # if not same_depth add gap
-        if not same_depth:
-            self._block_factory.add_gap()
-            self._block_factory.scale(np.array(()))
+        if not same_depth and 'pooling' not in str(type(module)):
+            self._blocks.add_gap()
+            if len(out_shape) == len(in_shape) and last_in_equals_out:
+                scale = np.array(out_shape) / np.array(in_shape)
+
+                if len(scale) > 3:
+                    scale = scale[1:]
+                elif len(scale) < 3:
+                    return
+
+                self._blocks.scale(scale)
 
         # add current module to blocks
         self._blocks.append(module)

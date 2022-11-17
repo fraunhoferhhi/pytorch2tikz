@@ -1,6 +1,6 @@
-from .blocks_abcs import Block3D
+from .blocks_abcs import TexElement
 
-class Begin:
+class Begin(TexElement):
     @property
     def tex(self) -> str:        
         return f"""
@@ -10,7 +10,7 @@ class Begin:
 \\usetikzlibrary{{positioning}}
 \\usetikzlibrary{{3d}} %for including external image
 
-\def\edgecolor{{grey}}
+\def\edgecolor{{rgb,255:black,200}}
 \\newcommand{{\midarrow}}{{\\tikz \draw[-Stealth,line width =0.8mm,draw=\edgecolor] (-0.3,0) -- ++(0.3,0);}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -64,7 +64,7 @@ name=,
    
         %Multiple concatenated boxes
         \\foreach[count=\i,%
-                 evaluate=\i as \\xlabel using {{array({{\boxlabels}},\i-1)}},% 
+                 evaluate=\i as \\xlabel using {{array({{\\boxlabels}},\i-1)}},% 
                  evaluate=\\unscaledx as \k using {{\\unscaledx*\scale+\prev}}, remember=\k as \prev (initially 0)] 
                  \\unscaledx in \cubex
         {{
@@ -102,7 +102,7 @@ name=,
         
         \\tikzstyle{{captionlabel}}=[text width=15*\LastEastx/\scale,text centered]       
         \path (\LastEastx/2,-\y/2,+\z/2) + (0,-25pt) coordinate (cap) 
-        edge ["\\textcolor{{black}}{{ \bf \caption}}"',captionlabel](cap) ; %Block caption/pic object label
+        edge ["\\textcolor{{black}}{{ \\bf \caption}}"',captionlabel](cap) ; %Block caption/pic object label
          
         %Define nodes to be used outside on the pic object
         \coordinate (\\name-west)   at (0,0,0) ;
@@ -141,7 +141,7 @@ name=,
     height/.store       in=\cubey,
     depth/.store        in=\cubez,
     scale/.store        in=\scale,
-    xlabel/.store       in=\boxlabels,
+    xlabel/.store       in=\\boxlabels,
     ylabel/.store       in=\ylabel,
     zlabel/.store       in=\zlabel,
     caption/.store      in=\caption,
@@ -169,14 +169,14 @@ name=,
                 
         \\tikzstyle{{box}}=[every edge/.append style={{pic actions, densely dashed, opacity=.7}},fill opacity=\opacity, pic actions,fill=\\fill]
         
-        \\tikzstyle{{band}}=[every edge/.append style={{pic actions, densely dashed, opacity=.7}},fill opacity=\bandopacity, pic actions,fill=\bandfill,draw=\bandfill]
+        \\tikzstyle{{band}}=[every edge/.append style={{pic actions, densely dashed, opacity=.7}},fill opacity=\\bandopacity, pic actions,fill=\\bandfill,draw=\\bandfill]
         
         \pgfmathsetmacro{{\y}}{{\cubey*\scale}}
         \pgfmathsetmacro{{\z}}{{\cubez*\scale}}
 
         %Multiple concatenated boxes	 	  	
         \\foreach[count=\i,%
-                 evaluate=\i as \\xlabel using {{array({{\boxlabels}},\i-1)}},% 
+                 evaluate=\i as \\xlabel using {{array({{\\boxlabels}},\i-1)}},% 
                  evaluate=\\unscaledx as \k using {{\\unscaledx*\scale+\prev}}, remember=\k as \prev (initially 0)] 
                  \\unscaledx in \cubex
         {{
@@ -228,7 +228,7 @@ name=,
         
         \\tikzstyle{{captionlabel}}=[text width=15*\LastEastx/\scale,text centered] 
         \path (\LastEastx/2,-\y/2,+\z/2) + (0,-25pt) coordinate (cap) 
-        edge ["\\textcolor{{black}}{{ \bf \caption}}"',captionlabel] (cap); %Block caption/pic object label
+        edge ["\\textcolor{{black}}{{ \\bf \caption}}"',captionlabel] (cap); %Block caption/pic object label
          
         %Define nodes to be used outside on the pic object
         \coordinate (\\name-west)   at (0,0,0) ;
@@ -266,15 +266,15 @@ name=,
     height/.store       in=\cubey,
     depth/.store        in=\cubez,
     scale/.store        in=\scale,
-    xlabel/.store       in=\boxlabels,
+    xlabel/.store       in=\\boxlabels,
     ylabel/.store       in=\ylabel,
     zlabel/.store       in=\zlabels,
     caption/.store      in=\caption,
     name/.store         in=\\name,
     fill/.store         in=\\fill,
-    bandfill/.store     in=\bandfill,
+    bandfill/.store     in=\\bandfill,
     opacity/.store      in=\opacity,
-    bandopacity/.store  in=\bandopacity,
+    bandopacity/.store  in=\\bandopacity,
     fill={{rgb:red,5;green,5;blue,5;white,15}},
     bandfill={{rgb:red,5;green,5;blue,5;white,5}},
     opacity=0.4,
@@ -316,7 +316,7 @@ name=,
 \\tikzstyle{{copyconnection}}=[ultra thick,every node/.style={{sloped,allow upside down}},draw={{rgb:blue,4;red,1;green,1;black,3}},opacity=0.7]
 """
 
-class End(Block3D):
+class End(TexElement):
     def __init__(self) -> None:
         pass
 
