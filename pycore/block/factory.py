@@ -3,7 +3,7 @@ from torch import Tensor, nn
 from torchvision.utils import save_image
 from typing import Tuple, Union
 
-from .abcs import Block, FlatBlock
+from .abcs import Block
 from .inputs import ImgInputBlock, VecInputBlock
 from ..mapping import BLOCK_MAPPING
 
@@ -40,7 +40,6 @@ class BlockFactory:
 
         if dim is not None:
             kwargs['dim'] = dim
-            print('here', block, kwargs['dim'])
         
         new_block: Block = block(
                  i,

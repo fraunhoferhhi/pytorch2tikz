@@ -1,4 +1,4 @@
-from typing import List, Generator
+from typing import List, Generator, Dict
 from torch import nn, Tensor
 import numpy as np
 
@@ -8,7 +8,6 @@ from .Dn import ConvActivationBlock
 from .D1 import LinearActivationBlock
 from .inputs import ImgInputBlock
 from .tex import Begin, End
-from ..mapping import BLOCK_MAPPING
 
 class BlockSequence:
 
@@ -25,7 +24,7 @@ class BlockSequence:
         self.ignore_layers = ignore_layers
 
         self._fuseable_layers = ['conv', 'linear']
-        self._seen_modules = {}
+        self._seen_modules: Dict[nn.Module, Block] = {}
         self._added_gap = False
 
     def append(self, module: nn.Module, dim):
@@ -35,12 +34,18 @@ class BlockSequence:
                 return
 
         if module in self._seen_modules.keys():
+            block = self._seen_modules[module]
+            for b in self.last_blocks:
+                if not block.looped and not b.looped:
+                    print('  ', b, block)
+                    self.connect(b, block, backwards=True)
+
+                block.looped = True
+            self.last_blocks = [block]
+            
             self.flush()
             return
 
-        print()
-        print(module, dim)
-        print()
         self.buffer.append((module, dim))
         
         fuseable = False
@@ -100,7 +105,6 @@ class BlockSequence:
         else:
             raise Exception(f'buffer has untypical length of {len(self.buffer)}')
 
-        print(new_block, dim)
         new_block = self.block_factory.create(new_block, len(self.blocks), dim)
         self.append_block(new_block)
         self._seen_modules[first_entry] = new_block
@@ -121,9 +125,18 @@ class BlockSequence:
         self._added_gap = True
         self.block_factory.add_gap(axis)
 
-    def connect(self, block1, block2) -> None:
-        if not isinstance(block1, ImgInputBlock) and not isinstance(block2, ImgInputBlock):
-            self.connections.append(Connection(block1, block2))
+    def connect(self, block1, block2, backwards=False) -> None:
+        if not isinstance(block1, ImgInputBlock) and\
+           not isinstance(block2, ImgInputBlock) and\
+           not self.has_connection(block1, block2):
+            self.connections.append(Connection(block1, block2, backwards, self.block_factory.size[1]))
+
+    def has_connection(self, block1, block2) -> bool:
+        new_conn = Connection(block1, block2)
+        for c in self.connections:
+            if c.name1 == new_conn.name1 and c.name2 == new_conn.name2:
+                return True
+        return False
 
     def __iter__(self) -> Generator[Block, None, None]:
         yield Begin()

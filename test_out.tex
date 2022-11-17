@@ -411,7 +411,20 @@ name=,
 
 \pic[shift={(1.6, 0.0, 0.0)}] at (Pool_6-east)
     {Box={
-        name=Embedding_8,
+        name=Linear_8,
+        fill=\LinearColor,
+        opacity=0.7,
+        caption= ,
+        width=2,
+        height=2,
+        depth=22.04724409448819
+        }
+    };
+
+
+\pic[shift={(0.0, 0.0, 0.0)}] at (Linear_8-east)
+    {Box={
+        name=Embedding_9,
         fill=\EmbeddingColor,
         opacity=0.7,
         caption= ,
@@ -422,9 +435,9 @@ name=,
     };
 
 
-\pic[shift={(0.0, 6.009448818897638, 0.0)}] at (Embedding_8-east)
+\pic[shift={(0.0, 6.009448818897638, 0.0)}] at (Embedding_9-east)
     {Box={
-        name=VecInput_9,
+        name=VecInput_10,
         fill=\VecInputColor,
         opacity=0.7,
         caption= ,
@@ -435,9 +448,9 @@ name=,
     };
 
 
-\pic[shift={(1.6, 0.0, 0.0)}] at (Embedding_8-east)
+\pic[shift={(1.6, 0.0, 0.0)}] at (Embedding_9-east)
     {Box={
-        name=LSTM_10,
+        name=LSTM_11,
         fill=\LstmColor,
         opacity=0.7,
         caption= ,
@@ -448,10 +461,23 @@ name=,
     };
 
 
-\pic[shift={(0.0, 0.0, 0.0)}] at (LSTM_10-east)
+\pic[shift={(0.0, 0.0, 0.0)}] at (LSTM_11-east)
     {Box={
-        name=Dropout_11,
+        name=Dropout_12,
         fill=\DropoutColor,
+        opacity=0.7,
+        caption= ,
+        width=2,
+        height=2,
+        depth=22.04724409448819
+        }
+    };
+
+
+\pic[shift={(3.2, 0.0, 0.0)}] at (Dropout_12-east)
+    {Box={
+        name=Linear_13,
+        fill=\LinearColor,
         opacity=0.7,
         caption= ,
         width=2,
@@ -462,10 +488,21 @@ name=,
 
 \draw [connection] (Pool_2-east) -- node {\midarrow} (ConvAct_3-west);
 \draw [connection] (Pool_4-east) -- node {\midarrow} (ConvAct_5-west);
-\draw [connection] (Pool_6-east) -- node {\midarrow} (Embedding_8-west);
-\draw [connection] (VecInput_7-east) -- node {\midarrow} (Embedding_8-west);
-\draw [connection] (Embedding_8-east) -- node {\midarrow} (LSTM_10-west);
-\draw [connection] (VecInput_9-east) -- node {\midarrow} (LSTM_10-west);
+\draw [connection] (Pool_6-east) -- node {\midarrow} (Linear_8-west);
+\draw [connection] (VecInput_7-east) -- node {\midarrow} (Linear_8-west);
+\draw [connection] (Embedding_9-east) -- node {\midarrow} (LSTM_11-west);
+\draw [connection] (VecInput_10-east) -- node {\midarrow} (LSTM_11-west);
+
+\path (Dropout_12-southeast) -- (Dropout_12-northeast) coordinate[pos=4.409448818897638] (Dropout_12-top) ;
+\path (Embedding_9-south)  -- (Embedding_9-north)  coordinate[pos=4.409448818897638] (Embedding_9-top) ;
+\draw [connection]  (Dropout_12-northeast) -- node {\midarrow}(Dropout_12-top) -- node {\midarrow}(Embedding_9-top) -- node {\midarrow}(Embedding_9-north);
+
+\draw [connection] (Embedding_9-east) -- node {\midarrow} (Linear_13-west);
+
+\path (Linear_13-southeast) -- (Linear_13-northeast) coordinate[pos=4.409448818897638] (Linear_13-top) ;
+\path (LSTM_11-south)  -- (LSTM_11-north)  coordinate[pos=4.409448818897638] (LSTM_11-top) ;
+\draw [connection]  (Linear_13-northeast) -- node {\midarrow}(Linear_13-top) -- node {\midarrow}(LSTM_11-top) -- node {\midarrow}(LSTM_11-north);
+
 
 \end{tikzpicture}
 \end{document}

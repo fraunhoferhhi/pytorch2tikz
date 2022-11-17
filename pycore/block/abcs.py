@@ -85,7 +85,7 @@ class Block(TexElement):
         self.offset = np.array(offset)
         self.to = to
         self.is_input = is_input
-
+        self.looped = False
 
         self.args = {
             "fill": fill,
@@ -116,16 +116,20 @@ class FlatBlock(Block):
 
 class Connection(TexElement):
     
-    def __init__(self, block1: Block, block2: Block, direction='lr') -> None:
+    def __init__(self, block1: Block, block2: Block, backwards = False, offset=5) -> None:
         super().__init__()
-        self.name1 = f'{block1.name}-east'
-        self.name2 = f'{block2.name}-west'
-        
-        if direction != 'lr':
-            tmp = self.name1
-            self.name1 = self.name2
-            self.name2 = tmp
+        self.name1 = block1.name
+        self.name2 = block2.name
+        self.backwards = backwards
+        self.offset = offset / CM_FACTOR
 
     @property
     def tex(self) -> str:
-        return f"""\draw [connection] ({self.name1}) -- node {{\midarrow}} ({self.name2});"""
+        if self.backwards:
+            return f"""
+\path ({self.name1}-southeast) -- ({self.name1}-northeast) coordinate[pos={self.offset}] ({self.name1}-top) ;
+\path ({self.name2}-south)  -- ({self.name2}-north)  coordinate[pos={self.offset}] ({self.name2}-top) ;
+\draw [connection]  ({self.name1}-northeast) -- node {{\midarrow}}({self.name1}-top) -- node {{\midarrow}}({self.name2}-top) -- node {{\midarrow}}({self.name2}-north);
+"""
+        else:
+            return f"""\draw [connection] ({self.name1}-east) -- node {{\midarrow}} ({self.name2}-west);"""

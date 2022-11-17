@@ -39,7 +39,7 @@ class Architecure:
 
         if self._last_data_ptr is not None:
             last_in_equals_out = self._last_data_ptr == in_ptr or 'activation' in str(type(module))
-            pass
+
         self._last_data_ptr = out_ptr
 
         # set inputs
@@ -60,10 +60,7 @@ class Architecure:
 
                 if len(scale) > 3:
                     scale = scale[1:]
-                elif len(scale) < 3:
-                    return
-
-                self._block_sequence.scale(scale)
+                    self._block_sequence.scale(scale)
 
         # add current module to blocks
         self._block_sequence.append(module, len(in_shape) - 1)
