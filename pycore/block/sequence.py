@@ -35,15 +35,18 @@ class BlockSequence:
         for l in self.ignore_layers:
             if l in str(type(module)):
                 return
+        if module  not in self._seen_modules.keys():
+            print("==>> module: ", module)
 
         if module in self._seen_modules.keys():
-            block = self._seen_modules[module]
+            mod_block = self._seen_modules[module]
             for b in self.last_blocks:
-                if not block.looped and not b.looped:
-                    self.connect(b, block, backwards=True)
+                if not mod_block.looped and not b.looped:
+                    print("==>> self.last_blocks: ", self.last_blocks)
+                    self.connect(b, mod_block, backwards=True)
 
-                block.looped = True
-            self.last_blocks = [block]
+                mod_block.looped = True
+            self.last_blocks = [mod_block]
             
             self.flush()
             return
@@ -99,9 +102,10 @@ class BlockSequence:
                 new_block = LinearActivationBlock
             else:
                 for m, dim in self.buffer:
-                    new_block = self.block_factory.create(m, len(self.blocks), dim)
-                    self._seen_modules[m] = new_block
-                    self.append_block(new_block)
+                    if m not in self._seen_modules.keys():
+                        new_block = self.block_factory.create(m, len(self.blocks), dim)
+                        self._seen_modules[m] = new_block
+                        self.append_block(new_block)
                 self.buffer = []
                 return
         else:
@@ -111,10 +115,10 @@ class BlockSequence:
         self.append_block(new_block)
         self._seen_modules[first_entry] = new_block
     
-        print('created', new_block.__class__.__name__.ljust(20), ' for ', first_entry)
-        if len(self.buffer) > 1:
-            for b, _ in self.buffer[1:]:
-                print(' ' * 34, b)
+        # print('created', new_block.__class__.__name__.ljust(20), ' for ', first_entry)
+        # if len(self.buffer) > 1:
+        #     for b, _ in self.buffer[1:]:
+        #         print(' ' * 34, b)
 
         self.buffer = []
 

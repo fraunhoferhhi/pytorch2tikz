@@ -26,7 +26,7 @@ COLOR_VALUES = {
     
     'NORM': "#c40000",
     'LSTM': "#000080",
-    'EDGE': '#AAAAAA'
+    'EDGE': '#555555'
 }
 
 class PICTYPE(Enum):

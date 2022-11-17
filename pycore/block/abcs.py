@@ -4,7 +4,6 @@ import numpy as np
 from abc import abstractmethod
 
 from ..constants import CM_FACTOR, COLOR, PICTYPE
-from ..utils import hex_to_tex_color
 
 class TexElement:
     @property
@@ -19,50 +18,6 @@ class TexElement:
         return self.tex
 
 class Block(TexElement):
-    @property
-    def dim(self) -> int:
-        return self._dim
-    
-    @dim.setter
-    def dim(self, dim: int):
-        self.default_size = [self._default_size] * 3
-        self.default_size[-dim:] = [None] * dim
-
-    @property
-    def size(self) -> Tuple[int]:
-        return tuple((self.args['width'], self.args['height'], self.args['depth']))
-    
-    @size.setter
-    def size(self, size: Iterable[int]):
-        for i, dim in enumerate(['width', 'height', 'depth']):
-            if self.default_size[i] is None:
-                self.args[dim] = size[i] * self.scale_factor
-            else:
-                self.args[dim] = self.default_size[i]
-
-    @property
-    def tex(self) -> str:
-        args = ''
-        for k, v in self.args.items():
-            if isinstance(v, Enum):
-                v = v.value
-            elif type(v) in [tuple, list] and isinstance(v[0], Enum):
-                v = [i.value for i in v]
-
-            if type(v) in [tuple, list]:
-                args += f'\n        {k}={{{",".join(v)}}},'
-            else:
-                args += f'\n        {k}={v},'
-        
-        args = args[:-1]
-
-        return f"""
-\pic[shift={{{tuple(self.offset / CM_FACTOR)}}}] at {self.to}
-    {{{self.pictype.value}={{
-        name={self.name},{args}
-        }}
-    }};
-"""
     
     def __init__(self,
                  name,
@@ -110,6 +65,51 @@ class Block(TexElement):
             self.args['xlabel'] = xlabel
         if zlabel is not None:
             self.args['zlabel'] = zlabel
+    @property
+    def dim(self) -> int:
+        return self._dim
+    
+    @dim.setter
+    def dim(self, dim: int):
+        self.default_size = [self._default_size] * 3
+        self.default_size[-dim:] = [None] * dim
+
+    @property
+    def size(self) -> Tuple[int]:
+        return tuple((self.args['width'], self.args['height'], self.args['depth']))
+    
+    @size.setter
+    def size(self, size: Iterable[int]):
+        for i, dim in enumerate(['width', 'height', 'depth']):
+            if self.default_size[i] is None:
+                self.args[dim] = size[i] * self.scale_factor
+            else:
+                self.args[dim] = self.default_size[i]
+
+    @property
+    def tex(self) -> str:
+        args = ''
+        for k, v in self.args.items():
+            if isinstance(v, Enum):
+                v = v.value
+            elif type(v) in [tuple, list] and isinstance(v[0], Enum):
+                v = [i.value for i in v]
+
+            if type(v) in [tuple, list]:
+                args += f'\n        {k}={{{",".join(v)}}},'
+            else:
+                args += f'\n        {k}={v},'
+        
+        args = args[:-1]
+
+        return f"""
+\pic[shift={{{tuple(self.offset / CM_FACTOR)}}}] at {self.to}
+    {{{self.pictype.value}={{
+        name={self.name},{args}
+        }}
+    }};
+"""
+
 
 class FlatBlock(Block):
     def __init__(self, name, dim=3, **kwargs) -> None:
