@@ -30,8 +30,8 @@ class Architecure:
         input = input[0]
     
         # get current shapes
-        in_shape = input.shape
-        out_shape = output.shape
+        in_shape = input.squeeze().shape
+        out_shape = output.squeeze().shape
         in_ptr = input.data_ptr()
         out_ptr = output.data_ptr()
         
@@ -66,7 +66,7 @@ class Architecure:
                 self._block_sequence.scale(scale)
 
         # add current module to blocks
-        self._block_sequence.append(module)
+        self._block_sequence.append(module, len(in_shape) - 1)
 
         self._tensor_size = None
 

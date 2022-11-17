@@ -3,7 +3,7 @@ from torch import Tensor, nn
 from torchvision.utils import save_image
 from typing import Tuple, Union
 
-from .abcs import Block
+from .abcs import Block, FlatBlock
 from .inputs import ImgInputBlock, VecInputBlock
 from ..mapping import BLOCK_MAPPING
 
@@ -23,8 +23,7 @@ class BlockFactory:
         self.last_block_id = 0
         self.last_block_dim = None
     
-    def _get_block_type(self, module: nn.Module) -> Tuple[type, int]:
-        dim = None
+    def _get_block_type(self, module: nn.Module, dim=None) -> Tuple[type, int]:
         if module.__class__.__name__.lower().endswith('d'):
             dim = int(module.__class__.__name__[-2]) + 1
         
@@ -37,9 +36,11 @@ class BlockFactory:
     def create(self, block: Union[type, Block], i: int, dim=None) -> Block:
         kwargs = {}
         if not isinstance(block, type):
-            block, dim = self._get_block_type(block)
-            if dim is not None:
-                kwargs['dim'] = dim
+            block, dim = self._get_block_type(block, dim)
+
+        if dim is not None:
+            kwargs['dim'] = dim
+            print('here', block, kwargs['dim'])
         
         new_block: Block = block(
                  i,

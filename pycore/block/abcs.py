@@ -19,6 +19,15 @@ class TexElement:
 
 class Block(TexElement):
     @property
+    def dim(self) -> int:
+        return self._dim
+    
+    @dim.setter
+    def dim(self, dim: int):
+        self.default_size = [self._default_size] * 3
+        self.default_size[-dim:] = [None] * dim
+
+    @property
     def size(self) -> Tuple[int]:
         return tuple((self.args['width'], self.args['height'], self.args['depth']))
     
@@ -85,8 +94,9 @@ class Block(TexElement):
         }
 
         self.scale_factor = scale_factor
-        self.default_size = [default_size] * 3
-        self.default_size[-dim:] = [None] * dim
+        self._default_size = default_size
+        self._dim = dim
+        self.dim = dim
 
         self.size = size
         
@@ -102,7 +112,7 @@ class Block(TexElement):
 
 class FlatBlock(Block):
     def __init__(self, name, dim=3, **kwargs) -> None:
-        super().__init__(name, dim=dim-1, **kwargs)
+        super().__init__(name, dim=max(1, dim-1), **kwargs)
 
 class Connection(TexElement):
     

@@ -28,27 +28,27 @@ class BlockSequence:
         self._seen_modules = {}
         self._added_gap = False
 
-    def append(self, module: nn.Module):
-        """appends the modules buffer if module should not be ignored ans was not seen before. If module is not fuseable call self.flush()
-
-        Args:
-            module (nn.Module): Module to be appended to buffer
-        """
-        if module in self._seen_modules.keys():
-            return
-
+    def append(self, module: nn.Module, dim):
+        """appends the modules buffer if module should not be ignored ans was not seen before. If module is not fuseable call self.flush()"""
         for l in self.ignore_layers:
             if l in str(type(module)):
                 return
 
-        self.buffer.append(module)
+        if module in self._seen_modules.keys():
+            self.flush()
+            return
+
+        print()
+        print(module, dim)
+        print()
+        self.buffer.append((module, dim))
         
         fuseable = False
         for l in self._fuseable_layers:
             if l in str(type(module)):
                 fuseable = True
                 break
-        
+
         if not fuseable:
             self.flush()
     
@@ -58,10 +58,9 @@ class BlockSequence:
             self.blocks.append(input_block)
             self.last_blocks.append(input_block)
 
-            # print('create', input_block.__class__.__name__)
+            print('created', input_block.__class__.__name__)
 
     def append_block(self, block: Block):
-        print(block.__class__.__name__)
         self.blocks.append(block)
         for b in self.last_blocks:
             if not isinstance(b, ImgInputBlock) and self._added_gap:
@@ -71,27 +70,29 @@ class BlockSequence:
 
     def flush(self):
         """translate modules in self.buffer to blocks in self.blocks and connections in self.connections"""
+        if len(self.buffer) == 0:
+            return
 
-        dim = None
+        first_entry, dim = self.buffer[0]
 
         # if buffer has only one entry add block
         if len(self.buffer) == 1:
-            new_block = self.buffer[0]
+            new_block = first_entry
 
         elif len(self.buffer) == 2:
             # if buffer has fuseable entries
-            fuse_conv = 'conv' in str(type(self.buffer[0]))
-            fuse_linear = 'linear' in str(type(self.buffer[0]))
-            fuseable = (fuse_conv or fuse_linear) and 'activation' in str(type(self.buffer[1]))
+            fuse_conv = 'conv' in str(type(first_entry))
+            fuse_linear = 'linear' in str(type(first_entry))
+            fuseable = (fuse_conv or fuse_linear) and 'activation' in str(type(self.buffer[1][0]))
 
             if fuse_conv and fuseable:
-                _, dim = self.block_factory._get_block_type(self.buffer[0])
+                _, dim = self.block_factory._get_block_type(first_entry)
                 new_block = ConvActivationBlock
             elif fuse_linear and fuseable:
                 new_block = LinearActivationBlock
             else:
-                for m in self.buffer:
-                    new_block = self.block_factory.create(m, len(self.blocks))
+                for m, dim in self.buffer:
+                    new_block = self.block_factory.create(m, len(self.blocks), dim)
                     self._seen_modules[m] = new_block
                     self.append_block(new_block)
                 self.buffer = []
@@ -99,16 +100,15 @@ class BlockSequence:
         else:
             raise Exception(f'buffer has untypical length of {len(self.buffer)}')
 
-        
-        new_block = self.block_factory.create(new_block, len(self.blocks), dim=dim)
+        print(new_block, dim)
+        new_block = self.block_factory.create(new_block, len(self.blocks), dim)
         self.append_block(new_block)
-        self._seen_modules[self.buffer[0]] = new_block
+        self._seen_modules[first_entry] = new_block
     
-        # print('created', new_block.__class__.__name__.ljust(20), ' for ', self.buffer[0])
+        print('created', new_block.__class__.__name__.ljust(20), ' for ', first_entry)
         if len(self.buffer) > 1:
-            for b in self.buffer[1:]:
-                # print(' ' * 34, b)
-                ...
+            for b, _ in self.buffer[1:]:
+                print(' ' * 34, b)
 
         self.buffer = []
 
