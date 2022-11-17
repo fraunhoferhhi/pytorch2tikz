@@ -1,6 +1,5 @@
-from .blocks_1D import LinearBlock, LSTMBlock, EmbeddingBlock
-from .blocks_2D import NormBlock, PoolBlock, ActivationBlock, DropoutBlock
-from .blocks_3D import ConvBlock
+from .block.D1 import LinearBlock, LSTMBlock, EmbeddingBlock
+from .block.Dn import ConvBlock, NormBlock, PoolBlock, ActivationBlock, DropoutBlock
 
 BLOCK_MAPPING = {
     'torch.nn.modules.conv': ConvBlock,

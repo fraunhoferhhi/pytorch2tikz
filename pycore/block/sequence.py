@@ -2,13 +2,13 @@ from typing import List, Generator
 from torch import nn, Tensor
 import numpy as np
 
-from .block_factory import BlockFactory
-from .blocks_abcs import Block, Connection
-from .blocks_3D import ConvActivationBlock
-from .blocks_1D import LinearActivationBlock
-from .blocks_input import ImgInputBlock
-from .blocks_tex import Begin, End
-from .mapping import BLOCK_MAPPING
+from .factory import BlockFactory
+from .abcs import Block, Connection
+from .Dn import ConvActivationBlock
+from .D1 import LinearActivationBlock
+from .inputs import ImgInputBlock
+from .tex import Begin, End
+from ..mapping import BLOCK_MAPPING
 
 class BlockSequence:
 
@@ -58,9 +58,10 @@ class BlockSequence:
             self.blocks.append(input_block)
             self.last_blocks.append(input_block)
 
-            print('create', input_block.__class__.__name__)
+            # print('create', input_block.__class__.__name__)
 
     def append_block(self, block: Block):
+        print(block.__class__.__name__)
         self.blocks.append(block)
         for b in self.last_blocks:
             if not isinstance(b, ImgInputBlock) and self._added_gap:
@@ -71,9 +72,11 @@ class BlockSequence:
     def flush(self):
         """translate modules in self.buffer to blocks in self.blocks and connections in self.connections"""
 
+        dim = None
+
         # if buffer has only one entry add block
         if len(self.buffer) == 1:
-            new_block_type = self.get_block_type(self.buffer[0])
+            new_block = self.buffer[0]
 
         elif len(self.buffer) == 2:
             # if buffer has fuseable entries
@@ -82,12 +85,13 @@ class BlockSequence:
             fuseable = (fuse_conv or fuse_linear) and 'activation' in str(type(self.buffer[1]))
 
             if fuse_conv and fuseable:
-                new_block_type = ConvActivationBlock
+                _, dim = self.block_factory._get_block_type(self.buffer[0])
+                new_block = ConvActivationBlock
             elif fuse_linear and fuseable:
-                new_block_type = LinearActivationBlock
+                new_block = LinearActivationBlock
             else:
                 for m in self.buffer:
-                    new_block = self.block_factory.create(self.get_block_type(m), len(self.blocks))
+                    new_block = self.block_factory.create(m, len(self.blocks))
                     self._seen_modules[m] = new_block
                     self.append_block(new_block)
                 self.buffer = []
@@ -95,16 +99,20 @@ class BlockSequence:
         else:
             raise Exception(f'buffer has untypical length of {len(self.buffer)}')
 
-        print('create', new_block_type.__name__.ljust(20), '  for  ', self.buffer[0])
-        if len(self.buffer) > 1:
-            for b in self.buffer[1:]:
-                print(' ' * 35, b)
         
-        new_block = self.block_factory.create(new_block_type, len(self.blocks))
+        new_block = self.block_factory.create(new_block, len(self.blocks), dim=dim)
         self.append_block(new_block)
         self._seen_modules[self.buffer[0]] = new_block
-        self.buffer = []
     
+        # print('created', new_block.__class__.__name__.ljust(20), ' for ', self.buffer[0])
+        if len(self.buffer) > 1:
+            for b in self.buffer[1:]:
+                # print(' ' * 34, b)
+                ...
+
+        self.buffer = []
+
+
     def scale(self, scale: np.ndarray):
         if len(self.blocks) > 1:
             self.block_factory.scale(scale)
@@ -116,11 +124,6 @@ class BlockSequence:
     def connect(self, block1, block2) -> None:
         if not isinstance(block1, ImgInputBlock) and not isinstance(block2, ImgInputBlock):
             self.connections.append(Connection(block1, block2))
-    
-    def get_block_type(self, module: nn.Module):
-        for i, (key, value) in enumerate(BLOCK_MAPPING.items()):
-            if key in str(type(module)):
-                return value
 
     def __iter__(self) -> Generator[Block, None, None]:
         yield Begin()

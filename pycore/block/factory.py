@@ -1,10 +1,11 @@
 import numpy as np
-from torch import Tensor
+from torch import Tensor, nn
 from torchvision.utils import save_image
+from typing import Tuple, Union
 
-from .blocks_abcs import Block
-from .blocks_input import ImgInputBlock, VecInputBlock
-
+from .abcs import Block
+from .inputs import ImgInputBlock, VecInputBlock
+from ..mapping import BLOCK_MAPPING
 
 class BlockFactory:
     def __init__(self,
@@ -20,13 +21,32 @@ class BlockFactory:
         self.to = (0,0,0)
         self.current_offset = np.zeros(3)
         self.last_block_id = 0
+        self.last_block_dim = None
     
-    def create(self, block_class, i: int) -> Block:
-        new_block: Block = block_class(
+    def _get_block_type(self, module: nn.Module) -> Tuple[type, int]:
+        dim = None
+        if module.__class__.__name__.lower().endswith('d'):
+            dim = int(module.__class__.__name__[-2]) + 1
+        
+        for key, value in BLOCK_MAPPING.items():
+            if key in str(type(module)):
+                return value, dim
+        
+        raise Exception(f'could not found Block for {module}')
+
+    def create(self, block: Union[type, Block], i: int, dim=None) -> Block:
+        kwargs = {}
+        if not isinstance(block, type):
+            block, dim = self._get_block_type(block)
+            if dim is not None:
+                kwargs['dim'] = dim
+        
+        new_block: Block = block(
                  i,
                  size = self.size,
                  offset = self.current_offset,
-                 to = self.to)
+                 to = self.to, **kwargs)
+
         self.to = f'({new_block.name}-east)'
         self.last_block_id = i
         self.current_offset = np.zeros(3)

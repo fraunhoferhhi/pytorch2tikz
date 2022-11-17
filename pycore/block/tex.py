@@ -1,4 +1,4 @@
-from .blocks_abcs import TexElement
+from .abcs import TexElement
 
 class Begin(TexElement):
     @property

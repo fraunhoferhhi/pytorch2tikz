@@ -3,8 +3,8 @@ import numpy as np
 from torch import Tensor, nn
 import torch
 
-from .block_factory import BlockFactory
-from .block_sequence import BlockSequence
+from .block.factory import BlockFactory
+from .block.sequence import BlockSequence
 
 class Architecure:
     def __init__(self,
@@ -36,7 +36,7 @@ class Architecure:
         out_ptr = output.data_ptr()
         
         last_in_equals_out = False
-        # print(type(module), self._last_data_ptr, in_ptr, self._last_data_ptr == in_ptr)
+
         if self._last_data_ptr is not None:
             last_in_equals_out = self._last_data_ptr == in_ptr or 'activation' in str(type(module))
             pass

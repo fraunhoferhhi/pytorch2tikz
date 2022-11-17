@@ -3,7 +3,7 @@ from typing import Iterable, Tuple
 import numpy as np
 from abc import abstractmethod
 
-from .constants import CM_FACTOR, COLOR, PICTYPE
+from ..constants import CM_FACTOR, COLOR, PICTYPE
 
 class TexElement:
     @property
@@ -24,9 +24,11 @@ class Block(TexElement):
     
     @size.setter
     def size(self, size: Iterable[int]):
-        self.args["width"] = size[0] * self.scale_factor
-        self.args["height"] = size[1] * self.scale_factor
-        self.args["depth"] = size[2] * self.scale_factor
+        for i, dim in enumerate(['width', 'height', 'depth']):
+            if self.default_size[i] is None:
+                self.args[dim] = size[i] * self.scale_factor
+            else:
+                self.args[dim] = self.default_size[i]
 
     @property
     def tex(self) -> str:
@@ -59,7 +61,8 @@ class Block(TexElement):
                  pictype = PICTYPE.BOX,
                  opacity = 0.7,
                  size = (10,40,40),
-                 default_size = (2,2,2),
+                 default_size = 2,
+                 dim = 3,
                  scale_factor = 1,
                  offset = (0,0,0),
                  to = (0,0,0),
@@ -82,7 +85,9 @@ class Block(TexElement):
         }
 
         self.scale_factor = scale_factor
-        self.default_size = default_size
+        self.default_size = [default_size] * 3
+        self.default_size[-dim:] = [None] * dim
+
         self.size = size
         
         if bandfill is not None:
@@ -95,35 +100,13 @@ class Block(TexElement):
         if zlabel is not None:
             self.args['zlabel'] = zlabel
 
-class Block3D(Block):
-    pass
-
-class Block1D(Block):
-    @property
-    def size(self) -> Tuple[int]:
-        return tuple((self.args['width'], self.args['height'], self.args['depth']))
-    
-    @size.setter
-    def size(self, size: Iterable[int]):
-        self.args["width"] = self.default_size[0]
-        self.args["height"] = self.default_size[1]
-        self.args["depth"] = size[2] * self.scale_factor
-
-class Block2D(Block):
-    @property
-    def size(self) -> Tuple[int]:
-        return tuple((self.args['width'], self.args['height'], self.args['depth']))
-    
-    @size.setter
-    def size(self, size: Iterable[int]):
-        self.args["width"] = self.default_size[0]
-        self.args["height"] = size[1] * self.scale_factor
-        self.args["depth"] = size[2] * self.scale_factor
-
+class FlatBlock(Block):
+    def __init__(self, name, dim=3, **kwargs) -> None:
+        super().__init__(name, dim=dim-1, **kwargs)
 
 class Connection(TexElement):
     
-    def __init__(self, block1: Block3D, block2: Block3D, direction='lr') -> None:
+    def __init__(self, block1: Block, block2: Block, direction='lr') -> None:
         super().__init__()
         self.name1 = f'{block1.name}-east'
         self.name2 = f'{block2.name}-west'
