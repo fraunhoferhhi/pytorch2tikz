@@ -1,6 +1,90 @@
 from .abcs import TexElement
+from typing import Dict
+from ..utils import hex_to_tex_color
+from ..constants import COLOR
+
+
+class ColorBlock(TexElement):
+    def __init__(self, colors: Dict[str, str]) -> None:
+        super().__init__()
+        self.colors = colors
+
+    @property
+    def tex(self) -> str:
+        out = ''
+        for k, v in self.colors.items():
+            out += f'\def{COLOR[k].value}{{{hex_to_tex_color(v)}}}\n'
+        return out
+
+class PositionsBlock(TexElement):
+    @property
+    def tex(self) -> str:
+        return f"""%Define nodes to be used outside on the pic object
+        \coordinate (\\name-west)   at (0,            0,    0);
+        \coordinate (\\name-east)   at (\LastEastx,   0,    0);
+        \coordinate (\\name-north)  at (\LastEastx/2, \y/2, 0);
+        \coordinate (\\name-south)  at (\LastEastx/2,-\y/2, 0);       
+        \coordinate (\\name-anchor) at (\LastEastx/2, 0,    0);
+        
+        \coordinate (\\name-near) at   (\LastEastx/2, 0,    \z/2);
+        \coordinate (\\name-far)  at   (\LastEastx/2, 0,   -\z/2);       
+        
+        \coordinate (\\name-nearwest) at (0,         0, \z/2);
+        \coordinate (\\name-neareast) at (\LastEastx,0, \z/2);
+        \coordinate (\\name-farwest)  at (0,         0,-\z/2);
+        \coordinate (\\name-fareast)  at (\LastEastx,0,-\z/2);
+        
+        \coordinate (\\name-northeast) at (\\name-north-|\\name-east);
+        \coordinate (\\name-northwest) at (\\name-north-|\\name-west);
+        \coordinate (\\name-southeast) at (\\name-south-|\\name-east);
+        \coordinate (\\name-southwest) at (\\name-south-|\\name-west);
+        
+        \coordinate (\\name-nearnortheast)  at (\LastEastx, \y/2, \z/2);
+        \coordinate (\\name-farnortheast)   at (\LastEastx, \y/2,-\z/2);
+        \coordinate (\\name-nearsoutheast)  at (\LastEastx,-\y/2, \z/2);
+        \coordinate (\\name-farsoutheast)   at (\LastEastx,-\y/2,-\z/2);
+        
+        \coordinate (\\name-nearnorthwest)  at (0, \y/2, \z/2);
+        \coordinate (\\name-farnorthwest)   at (0, \y/2,-\z/2);
+        \coordinate (\\name-nearsouthwest)  at (0,-\y/2, \z/2);
+        \coordinate (\\name-farsouthwest)   at (0,-\y/2,-\z/2);
+
+        % padded
+        \coordinate (\\name-padded-west)   at (-0.5,0,0);
+        \coordinate (\\name-padded-east)   at (\LastEastx + 0.5, 0,0) ;
+        \coordinate (\\name-padded-north)  at (\LastEastx/2, \y/2+0.5,0);
+        \coordinate (\\name-padded-south)  at (\LastEastx/2,-\y/2-0.5,0);
+        
+        \coordinate (\\name-padded-near)   at (\LastEastx/2,0, \z/2+0.5);
+        \coordinate (\\name-padded-far)    at (\LastEastx/2,0,-\z/2-0.5);       
+        
+        \coordinate (\\name-padded-nearwest) at (-0.5,          0,\z/2);
+        \coordinate (\\name-padded-neareast) at (\LastEastx+0.5,0,\z/2);
+        \coordinate (\\name-padded-farwest)  at (-0.5,          0,-\z/2);
+        \coordinate (\\name-padded-fareast)  at (\LastEastx+0.5,0,-\z/2);
+        
+        \coordinate (\\name-padded-northeast) at (\\name-padded-north-|\\name-padded-east);
+        \coordinate (\\name-padded-northwest) at (\\name-padded-north-|\\name-padded-west);
+        \coordinate (\\name-padded-southeast) at (\\name-padded-south-|\\name-padded-east);
+        \coordinate (\\name-padded-southwest) at (\\name-padded-south-|\\name-padded-west);
+        
+        \coordinate (\\name-padded-nearnortheast)  at (\LastEastx+0.5, \y/2+0.5, \z/2+0.5);
+        \coordinate (\\name-padded-farnortheast)   at (\LastEastx+0.5, \y/2+0.5,-\z/2-0.5);
+        \coordinate (\\name-padded-nearsoutheast)  at (\LastEastx+0.5,-\y/2-0.5, \z/2+0.5);
+        \coordinate (\\name-padded-farsoutheast)   at (\LastEastx+0.5,-\y/2-0.5,-\z/2-0.5);
+        
+        \coordinate (\\name-padded-nearnorthwest)  at (-0.5, \y/2+0.5, \z/2+0.5);
+        \coordinate (\\name-padded-farnorthwest)   at (-0.5, \y/2+0.5,-\z/2-0.5);
+        \coordinate (\\name-padded-nearsouthwest)  at (-0.5,-\y/2-0.5, \z/2+0.5);
+        \coordinate (\\name-padded-farsouthwest)   at (-0.5,-\y/2-0.5,-\z/2-0.5);
+"""
 
 class Begin(TexElement):
+    def __init__(self, colors: Dict[str, str]) -> None:
+        super().__init__()
+        self.colors = ColorBlock(colors)
+        self.positions = PositionsBlock()
+
     @property
     def tex(self) -> str:        
         return f"""
@@ -10,8 +94,9 @@ class Begin(TexElement):
 \\usetikzlibrary{{positioning}}
 \\usetikzlibrary{{3d}} %for including external image
 
-\def\edgecolor{{rgb,255:black,200}}
-\\newcommand{{\midarrow}}{{\\tikz \draw[-Stealth,line width =0.8mm,draw=\edgecolor] (-0.3,0) -- ++(0.3,0);}}
+{self.colors}
+
+\\newcommand{{\midarrow}}{{\\tikz \draw[-Stealth,line width =0.8mm,draw=\EdgeColor] (-0.3,0) -- ++(0.3,0);}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %This Block can draw small Ball
@@ -104,35 +189,7 @@ name=,
         \path (\LastEastx/2,-\y/2,+\z/2) + (0,-25pt) coordinate (cap) 
         edge ["\\textcolor{{black}}{{ \\bf \caption}}"',captionlabel](cap) ; %Block caption/pic object label
          
-        %Define nodes to be used outside on the pic object
-        \coordinate (\\name-west)   at (0,0,0) ;
-        \coordinate (\\name-east)   at (\LastEastx, 0,0) ;
-        \coordinate (\\name-north)  at (\LastEastx/2,\y/2,0);
-        \coordinate (\\name-south)  at (\LastEastx/2,-\y/2,0);       
-        \coordinate (\\name-anchor) at (\LastEastx/2, 0,0) ;
-        
-        \coordinate (\\name-near) at (\LastEastx/2,0,\z/2);
-        \coordinate (\\name-far)  at (\LastEastx/2,0,-\z/2);       
-        
-        \coordinate (\\name-nearwest) at (0,0,\z/2);
-        \coordinate (\\name-neareast) at (\LastEastx,0,\z/2);
-        \coordinate (\\name-farwest)  at (0,0,-\z/2);
-        \coordinate (\\name-fareast)  at (\LastEastx,0,-\z/2);
-        
-        \coordinate (\\name-northeast) at (\\name-north-|\\name-east);
-        \coordinate (\\name-northwest) at (\\name-north-|\\name-west);
-        \coordinate (\\name-southeast) at (\\name-south-|\\name-east);
-        \coordinate (\\name-southwest) at (\\name-south-|\\name-west);
-        
-        \coordinate (\\name-nearnortheast)  at (\LastEastx, \y/2, \z/2);
-        \coordinate (\\name-farnortheast)   at (\LastEastx, \y/2,-\z/2);
-        \coordinate (\\name-nearsoutheast)  at (\LastEastx,-\y/2, \z/2);
-        \coordinate (\\name-farsoutheast)   at (\LastEastx,-\y/2,-\z/2);
-        
-        \coordinate (\\name-nearnorthwest)  at (0, \y/2, \z/2);
-        \coordinate (\\name-farnorthwest)   at (0, \y/2,-\z/2);
-        \coordinate (\\name-nearsouthwest)  at (0,-\y/2, \z/2);
-        \coordinate (\\name-farsouthwest)   at (0,-\y/2,-\z/2);
+        {self.positions}
         
     }},
     /boxblock/.search also={{/tikz}},
@@ -230,35 +287,7 @@ name=,
         \path (\LastEastx/2,-\y/2,+\z/2) + (0,-25pt) coordinate (cap) 
         edge ["\\textcolor{{black}}{{ \\bf \caption}}"',captionlabel] (cap); %Block caption/pic object label
          
-        %Define nodes to be used outside on the pic object
-        \coordinate (\\name-west)   at (0,0,0) ;
-        \coordinate (\\name-east)   at (\LastEastx, 0,0) ;
-        \coordinate (\\name-north)  at (\LastEastx/2,\y/2,0);
-        \coordinate (\\name-south)  at (\LastEastx/2,-\y/2,0);       
-        \coordinate (\\name-anchor) at (\LastEastx/2, 0,0) ;
-        
-        \coordinate (\\name-near) at (\LastEastx/2,0,\z/2);
-        \coordinate (\\name-far)  at (\LastEastx/2,0,-\z/2);       
-        
-        \coordinate (\\name-nearwest) at (0,0,\z/2);
-        \coordinate (\\name-neareast) at (\LastEastx,0,\z/2);
-        \coordinate (\\name-farwest)  at (0,0,-\z/2);
-        \coordinate (\\name-fareast)  at (\LastEastx,0,-\z/2);
-        
-        \coordinate (\\name-northeast) at (\\name-north-|\\name-east);
-        \coordinate (\\name-northwest) at (\\name-north-|\\name-west);
-        \coordinate (\\name-southeast) at (\\name-south-|\\name-east);
-        \coordinate (\\name-southwest) at (\\name-south-|\\name-west);
-        
-        \coordinate (\\name-nearnortheast)  at (\LastEastx, \y/2, \z/2);
-        \coordinate (\\name-farnortheast)   at (\LastEastx, \y/2,-\z/2);
-        \coordinate (\\name-nearsoutheast)  at (\LastEastx,-\y/2, \z/2);
-        \coordinate (\\name-farsoutheast)   at (\LastEastx,-\y/2,-\z/2);
-        
-        \coordinate (\\name-nearnorthwest)  at (0, \y/2, \z/2);
-        \coordinate (\\name-farnorthwest)   at (0, \y/2,-\z/2);
-        \coordinate (\\name-nearsouthwest)  at (0,-\y/2, \z/2);
-        \coordinate (\\name-farsouthwest)   at (0,-\y/2,-\z/2);
+        {self.positions}
     }},
     /block/.search also={{/tikz}},
     /block/.cd,
@@ -312,7 +341,7 @@ name=,
 
 \\begin{{document}}
 \\begin{{tikzpicture}}
-\\tikzstyle{{connection}}=[ultra thick,every node/.style={{sloped,allow upside down}},draw=\edgecolor,opacity=0.7]
+\\tikzstyle{{connection}}=[ultra thick,every node/.style={{sloped,allow upside down}},draw=\EdgeColor,opacity=0.7]
 \\tikzstyle{{copyconnection}}=[ultra thick,every node/.style={{sloped,allow upside down}},draw={{rgb:blue,4;red,1;green,1;black,3}},opacity=0.7]
 """
 

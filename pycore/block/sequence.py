@@ -8,12 +8,14 @@ from .Dn import ConvActivationBlock
 from .D1 import LinearActivationBlock
 from .inputs import ImgInputBlock
 from .tex import Begin, End
+from ..constants import COLOR_VALUES
 
 class BlockSequence:
 
     def __init__(self,
                  block_factory: BlockFactory,
-                 ignore_layers: List[str]=['batchnorm']) -> None:
+                 ignore_layers: List[str]=['batchnorm'],
+                 colors = COLOR_VALUES) -> None:
 
         self.buffer: List[nn.Module] = []
         self.blocks: List[Block] = []
@@ -26,6 +28,7 @@ class BlockSequence:
         self._fuseable_layers = ['conv', 'linear']
         self._seen_modules: Dict[nn.Module, Block] = {}
         self._added_gap = False
+        self._colors = colors
 
     def append(self, module: nn.Module, dim):
         """appends the modules buffer if module should not be ignored ans was not seen before. If module is not fuseable call self.flush()"""
@@ -37,7 +40,6 @@ class BlockSequence:
             block = self._seen_modules[module]
             for b in self.last_blocks:
                 if not block.looped and not b.looped:
-                    print('  ', b, block)
                     self.connect(b, block, backwards=True)
 
                 block.looped = True
@@ -139,7 +141,7 @@ class BlockSequence:
         return False
 
     def __iter__(self) -> Generator[Block, None, None]:
-        yield Begin()
+        yield Begin(self._colors)
         for b in self.blocks:
             yield b
         for c in self.connections:

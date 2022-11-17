@@ -6,8 +6,19 @@
 \usetikzlibrary{positioning}
 \usetikzlibrary{3d} %for including external image
 
-\def\edgecolor{rgb,255:black,200}
-\newcommand{\midarrow}{\tikz \draw[-Stealth,line width =0.8mm,draw=\edgecolor] (-0.3,0) -- ++(0.3,0);}
+\def\ConvColor{rgb,255:red,255;green,210;blue,50}
+\def\ActivationColor{rgb,255:red,255;green,100;blue,0}
+\def\DropoutColor{rgb,255:red,255;green,0;blue,0}
+\def\PoolColor{rgb,255:red,200;green,0;blue,0}
+\def\VecInputColor{rgb,255:red,0;green,128;blue,0}
+\def\LinearColor{rgb,255:red,255;green,0;blue,255}
+\def\EmbeddingColor{rgb,255:red,0;green,0;blue,128}
+\def\NormColor{rgb,255:red,196;green,0;blue,0}
+\def\LstmColor{rgb,255:red,0;green,0;blue,128}
+\def\EdgeColor{rgb,255:red,170;green,170;blue,170}
+
+
+\newcommand{\midarrow}{\tikz \draw[-Stealth,line width =0.8mm,draw=\EdgeColor] (-0.3,0) -- ++(0.3,0);}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %This Block can draw small Ball
@@ -101,18 +112,18 @@ name=,
         edge ["\textcolor{black}{ \bf \caption}"',captionlabel](cap) ; %Block caption/pic object label
          
         %Define nodes to be used outside on the pic object
-        \coordinate (\name-west)   at (0,0,0) ;
-        \coordinate (\name-east)   at (\LastEastx, 0,0) ;
-        \coordinate (\name-north)  at (\LastEastx/2,\y/2,0);
-        \coordinate (\name-south)  at (\LastEastx/2,-\y/2,0);       
-        \coordinate (\name-anchor) at (\LastEastx/2, 0,0) ;
+        \coordinate (\name-west)   at (0,            0,    0);
+        \coordinate (\name-east)   at (\LastEastx,   0,    0);
+        \coordinate (\name-north)  at (\LastEastx/2, \y/2, 0);
+        \coordinate (\name-south)  at (\LastEastx/2,-\y/2, 0);       
+        \coordinate (\name-anchor) at (\LastEastx/2, 0,    0);
         
-        \coordinate (\name-near) at (\LastEastx/2,0,\z/2);
-        \coordinate (\name-far)  at (\LastEastx/2,0,-\z/2);       
+        \coordinate (\name-near) at   (\LastEastx/2, 0,    \z/2);
+        \coordinate (\name-far)  at   (\LastEastx/2, 0,   -\z/2);       
         
-        \coordinate (\name-nearwest) at (0,0,\z/2);
-        \coordinate (\name-neareast) at (\LastEastx,0,\z/2);
-        \coordinate (\name-farwest)  at (0,0,-\z/2);
+        \coordinate (\name-nearwest) at (0,         0, \z/2);
+        \coordinate (\name-neareast) at (\LastEastx,0, \z/2);
+        \coordinate (\name-farwest)  at (0,         0,-\z/2);
         \coordinate (\name-fareast)  at (\LastEastx,0,-\z/2);
         
         \coordinate (\name-northeast) at (\name-north-|\name-east);
@@ -129,6 +140,36 @@ name=,
         \coordinate (\name-farnorthwest)   at (0, \y/2,-\z/2);
         \coordinate (\name-nearsouthwest)  at (0,-\y/2, \z/2);
         \coordinate (\name-farsouthwest)   at (0,-\y/2,-\z/2);
+
+        % padded
+        \coordinate (\name-padded-west)   at (-0.5,0,0);
+        \coordinate (\name-padded-east)   at (\LastEastx + 0.5, 0,0) ;
+        \coordinate (\name-padded-north)  at (\LastEastx/2, \y/2+0.5,0);
+        \coordinate (\name-padded-south)  at (\LastEastx/2,-\y/2-0.5,0);
+        
+        \coordinate (\name-padded-near)   at (\LastEastx/2,0, \z/2+0.5);
+        \coordinate (\name-padded-far)    at (\LastEastx/2,0,-\z/2-0.5);       
+        
+        \coordinate (\name-padded-nearwest) at (-0.5,          0,\z/2);
+        \coordinate (\name-padded-neareast) at (\LastEastx+0.5,0,\z/2);
+        \coordinate (\name-padded-farwest)  at (-0.5,          0,-\z/2);
+        \coordinate (\name-padded-fareast)  at (\LastEastx+0.5,0,-\z/2);
+        
+        \coordinate (\name-padded-northeast) at (\name-padded-north-|\name-padded-east);
+        \coordinate (\name-padded-northwest) at (\name-padded-north-|\name-padded-west);
+        \coordinate (\name-padded-southeast) at (\name-padded-south-|\name-padded-east);
+        \coordinate (\name-padded-southwest) at (\name-padded-south-|\name-padded-west);
+        
+        \coordinate (\name-padded-nearnortheast)  at (\LastEastx+0.5, \y/2+0.5, \z/2+0.5);
+        \coordinate (\name-padded-farnortheast)   at (\LastEastx+0.5, \y/2+0.5,-\z/2-0.5);
+        \coordinate (\name-padded-nearsoutheast)  at (\LastEastx+0.5,-\y/2-0.5, \z/2+0.5);
+        \coordinate (\name-padded-farsoutheast)   at (\LastEastx+0.5,-\y/2-0.5,-\z/2-0.5);
+        
+        \coordinate (\name-padded-nearnorthwest)  at (-0.5, \y/2+0.5, \z/2+0.5);
+        \coordinate (\name-padded-farnorthwest)   at (-0.5, \y/2+0.5,-\z/2-0.5);
+        \coordinate (\name-padded-nearsouthwest)  at (-0.5,-\y/2-0.5, \z/2+0.5);
+        \coordinate (\name-padded-farsouthwest)   at (-0.5,-\y/2-0.5,-\z/2-0.5);
+
         
     },
     /boxblock/.search also={/tikz},
@@ -227,18 +268,18 @@ name=,
         edge ["\textcolor{black}{ \bf \caption}"',captionlabel] (cap); %Block caption/pic object label
          
         %Define nodes to be used outside on the pic object
-        \coordinate (\name-west)   at (0,0,0) ;
-        \coordinate (\name-east)   at (\LastEastx, 0,0) ;
-        \coordinate (\name-north)  at (\LastEastx/2,\y/2,0);
-        \coordinate (\name-south)  at (\LastEastx/2,-\y/2,0);       
-        \coordinate (\name-anchor) at (\LastEastx/2, 0,0) ;
+        \coordinate (\name-west)   at (0,            0,    0);
+        \coordinate (\name-east)   at (\LastEastx,   0,    0);
+        \coordinate (\name-north)  at (\LastEastx/2, \y/2, 0);
+        \coordinate (\name-south)  at (\LastEastx/2,-\y/2, 0);       
+        \coordinate (\name-anchor) at (\LastEastx/2, 0,    0);
         
-        \coordinate (\name-near) at (\LastEastx/2,0,\z/2);
-        \coordinate (\name-far)  at (\LastEastx/2,0,-\z/2);       
+        \coordinate (\name-near) at   (\LastEastx/2, 0,    \z/2);
+        \coordinate (\name-far)  at   (\LastEastx/2, 0,   -\z/2);       
         
-        \coordinate (\name-nearwest) at (0,0,\z/2);
-        \coordinate (\name-neareast) at (\LastEastx,0,\z/2);
-        \coordinate (\name-farwest)  at (0,0,-\z/2);
+        \coordinate (\name-nearwest) at (0,         0, \z/2);
+        \coordinate (\name-neareast) at (\LastEastx,0, \z/2);
+        \coordinate (\name-farwest)  at (0,         0,-\z/2);
         \coordinate (\name-fareast)  at (\LastEastx,0,-\z/2);
         
         \coordinate (\name-northeast) at (\name-north-|\name-east);
@@ -255,6 +296,36 @@ name=,
         \coordinate (\name-farnorthwest)   at (0, \y/2,-\z/2);
         \coordinate (\name-nearsouthwest)  at (0,-\y/2, \z/2);
         \coordinate (\name-farsouthwest)   at (0,-\y/2,-\z/2);
+
+        % padded
+        \coordinate (\name-padded-west)   at (-0.5,0,0);
+        \coordinate (\name-padded-east)   at (\LastEastx + 0.5, 0,0) ;
+        \coordinate (\name-padded-north)  at (\LastEastx/2, \y/2+0.5,0);
+        \coordinate (\name-padded-south)  at (\LastEastx/2,-\y/2-0.5,0);
+        
+        \coordinate (\name-padded-near)   at (\LastEastx/2,0, \z/2+0.5);
+        \coordinate (\name-padded-far)    at (\LastEastx/2,0,-\z/2-0.5);       
+        
+        \coordinate (\name-padded-nearwest) at (-0.5,          0,\z/2);
+        \coordinate (\name-padded-neareast) at (\LastEastx+0.5,0,\z/2);
+        \coordinate (\name-padded-farwest)  at (-0.5,          0,-\z/2);
+        \coordinate (\name-padded-fareast)  at (\LastEastx+0.5,0,-\z/2);
+        
+        \coordinate (\name-padded-northeast) at (\name-padded-north-|\name-padded-east);
+        \coordinate (\name-padded-northwest) at (\name-padded-north-|\name-padded-west);
+        \coordinate (\name-padded-southeast) at (\name-padded-south-|\name-padded-east);
+        \coordinate (\name-padded-southwest) at (\name-padded-south-|\name-padded-west);
+        
+        \coordinate (\name-padded-nearnortheast)  at (\LastEastx+0.5, \y/2+0.5, \z/2+0.5);
+        \coordinate (\name-padded-farnortheast)   at (\LastEastx+0.5, \y/2+0.5,-\z/2-0.5);
+        \coordinate (\name-padded-nearsoutheast)  at (\LastEastx+0.5,-\y/2-0.5, \z/2+0.5);
+        \coordinate (\name-padded-farsoutheast)   at (\LastEastx+0.5,-\y/2-0.5,-\z/2-0.5);
+        
+        \coordinate (\name-padded-nearnorthwest)  at (-0.5, \y/2+0.5, \z/2+0.5);
+        \coordinate (\name-padded-farnorthwest)   at (-0.5, \y/2+0.5,-\z/2-0.5);
+        \coordinate (\name-padded-nearsouthwest)  at (-0.5,-\y/2-0.5, \z/2+0.5);
+        \coordinate (\name-padded-farsouthwest)   at (-0.5,-\y/2-0.5,-\z/2-0.5);
+
     },
     /block/.search also={/tikz},
     /block/.cd,
@@ -308,7 +379,7 @@ name=,
 
 \begin{document}
 \begin{tikzpicture}
-\tikzstyle{connection}=[ultra thick,every node/.style={sloped,allow upside down},draw=\edgecolor,opacity=0.7]
+\tikzstyle{connection}=[ultra thick,every node/.style={sloped,allow upside down},draw=\EdgeColor,opacity=0.7]
 \tikzstyle{copyconnection}=[ultra thick,every node/.style={sloped,allow upside down},draw={rgb:blue,4;red,1;green,1;black,3},opacity=0.7]
 
 
@@ -493,15 +564,15 @@ name=,
 \draw [connection] (Embedding_9-east) -- node {\midarrow} (LSTM_11-west);
 \draw [connection] (VecInput_10-east) -- node {\midarrow} (LSTM_11-west);
 
-\path (Dropout_12-southeast) -- (Dropout_12-northeast) coordinate[pos=4.409448818897638] (Dropout_12-top) ;
-\path (Embedding_9-south)  -- (Embedding_9-north)  coordinate[pos=4.409448818897638] (Embedding_9-top) ;
-\draw [connection]  (Dropout_12-northeast) -- node {\midarrow}(Dropout_12-top) -- node {\midarrow}(Embedding_9-top) -- node {\midarrow}(Embedding_9-north);
+\path (Dropout_12-padded-neareast) -- (Dropout_12-padded-fareast) coordinate[pos=-2.204724409448819] (Dropout_12-nearnear);
+\path (Embedding_9-padded-nearwest) -- (Embedding_9-padded-farwest) coordinate[pos=-2.204724409448819] (Embedding_9-nearnear);
+\draw [connection]  (Dropout_12-east) -- (Dropout_12-padded-east) -- node {\midarrow}(Dropout_12-nearnear) -- node {\midarrow}(Embedding_9-nearnear) -- node {\midarrow}(Embedding_9-padded-west) -- (Embedding_9-west);
 
 \draw [connection] (Embedding_9-east) -- node {\midarrow} (Linear_13-west);
 
-\path (Linear_13-southeast) -- (Linear_13-northeast) coordinate[pos=4.409448818897638] (Linear_13-top) ;
-\path (LSTM_11-south)  -- (LSTM_11-north)  coordinate[pos=4.409448818897638] (LSTM_11-top) ;
-\draw [connection]  (Linear_13-northeast) -- node {\midarrow}(Linear_13-top) -- node {\midarrow}(LSTM_11-top) -- node {\midarrow}(LSTM_11-north);
+\path (Linear_13-padded-neareast) -- (Linear_13-padded-fareast) coordinate[pos=-2.204724409448819] (Linear_13-nearnear);
+\path (LSTM_11-padded-nearwest) -- (LSTM_11-padded-farwest) coordinate[pos=-2.204724409448819] (LSTM_11-nearnear);
+\draw [connection]  (Linear_13-east) -- (Linear_13-padded-east) -- node {\midarrow}(Linear_13-nearnear) -- node {\midarrow}(LSTM_11-nearnear) -- node {\midarrow}(LSTM_11-padded-west) -- (LSTM_11-west);
 
 
 \end{tikzpicture}

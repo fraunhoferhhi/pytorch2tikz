@@ -4,6 +4,7 @@ import numpy as np
 from abc import abstractmethod
 
 from ..constants import CM_FACTOR, COLOR, PICTYPE
+from ..utils import hex_to_tex_color
 
 class TexElement:
     @property
@@ -121,15 +122,15 @@ class Connection(TexElement):
         self.name1 = block1.name
         self.name2 = block2.name
         self.backwards = backwards
-        self.offset = offset / CM_FACTOR
+        self.offset = offset / 2. / CM_FACTOR * -1
 
     @property
     def tex(self) -> str:
         if self.backwards:
             return f"""
-\path ({self.name1}-southeast) -- ({self.name1}-northeast) coordinate[pos={self.offset}] ({self.name1}-top) ;
-\path ({self.name2}-south)  -- ({self.name2}-north)  coordinate[pos={self.offset}] ({self.name2}-top) ;
-\draw [connection]  ({self.name1}-northeast) -- node {{\midarrow}}({self.name1}-top) -- node {{\midarrow}}({self.name2}-top) -- node {{\midarrow}}({self.name2}-north);
+\path ({self.name1}-padded-neareast) -- ({self.name1}-padded-fareast) coordinate[pos={self.offset}] ({self.name1}-nearnear);
+\path ({self.name2}-padded-nearwest) -- ({self.name2}-padded-farwest) coordinate[pos={self.offset}] ({self.name2}-nearnear);
+\draw [connection]  ({self.name1}-east) -- ({self.name1}-padded-east) -- node {{\midarrow}}({self.name1}-nearnear) -- node {{\midarrow}}({self.name2}-nearnear) -- node {{\midarrow}}({self.name2}-padded-west) -- ({self.name2}-west);
 """
         else:
             return f"""\draw [connection] ({self.name1}-east) -- node {{\midarrow}} ({self.name2}-west);"""

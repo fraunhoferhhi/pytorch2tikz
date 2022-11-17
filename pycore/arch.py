@@ -5,6 +5,7 @@ import torch
 
 from .block.factory import BlockFactory
 from .block.sequence import BlockSequence
+from .constants import COLOR_VALUES
 
 class Architecure:
     def __init__(self,
@@ -12,7 +13,8 @@ class Architecure:
                  block_offset=8,
                  scale_factor=0.8,
                  image_path='./input_{i}.png',
-                 ignore_layers=['batchnorm']) -> None:
+                 ignore_layers=['batchnorm'],
+                 colors=COLOR_VALUES) -> None:
         self._block_factory = BlockFactory(start_size, block_offset, scale_factor)
         self._block_sequence = BlockSequence(self._block_factory, ignore_layers)
 
