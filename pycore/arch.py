@@ -14,7 +14,7 @@ class Architecure:
                  image_path='./input_{i}.png',
                  ignore_layers=['batchnorm']) -> None:
         self._block_factory = BlockFactory(start_size, block_offset, scale_factor)
-        self._blocks = BlockSequence(self._block_factory, ignore_layers)
+        self._block_sequence = BlockSequence(self._block_factory, ignore_layers)
 
         self.image_path = image_path
 
@@ -44,7 +44,7 @@ class Architecure:
 
         # set inputs
         if not last_in_equals_out:
-            self._blocks.append_input(input, module)
+            self._block_sequence.append_input(input, module)
 
         # check if tensor shape is equal to previous tensor shape, if not start new grouped blocks
         try:
@@ -54,7 +54,7 @@ class Architecure:
 
         # if not same_depth add gap
         if not same_depth and 'pooling' not in str(type(module)):
-            self._blocks.add_gap()
+            self._block_sequence.add_gap()
             if len(out_shape) == len(in_shape) and last_in_equals_out:
                 scale = np.array(out_shape) / np.array(in_shape)
 
@@ -63,15 +63,15 @@ class Architecure:
                 elif len(scale) < 3:
                     return
 
-                self._blocks.scale(scale)
+                self._block_sequence.scale(scale)
 
         # add current module to blocks
-        self._blocks.append(module)
+        self._block_sequence.append(module)
 
         self._tensor_size = None
 
     def finalize(self) -> str:
         out = ''
-        for b in self._blocks:
+        for b in self._block_sequence:
             out += f'\n{b}'
         return out

@@ -396,7 +396,7 @@ name=,
     };
 
 
-\pic[shift={(1.6, 6.009448818897638, 0.0)}] at (Pool_6-east)
+\pic[shift={(0.0, 6.009448818897638, 0.0)}] at (Pool_6-east)
     {Box={
         name=VecInput_7,
         fill=\VecInputColor,
@@ -463,7 +463,9 @@ name=,
 \draw [connection] (Pool_2-east) -- node {\midarrow} (ConvAct_3-west);
 \draw [connection] (Pool_4-east) -- node {\midarrow} (ConvAct_5-west);
 \draw [connection] (Pool_6-east) -- node {\midarrow} (Embedding_8-west);
+\draw [connection] (VecInput_7-east) -- node {\midarrow} (Embedding_8-west);
 \draw [connection] (Embedding_8-east) -- node {\midarrow} (LSTM_10-west);
+\draw [connection] (VecInput_9-east) -- node {\midarrow} (LSTM_10-west);
 
 \end{tikzpicture}
 \end{document}

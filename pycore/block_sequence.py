@@ -58,10 +58,12 @@ class BlockSequence:
             self.blocks.append(input_block)
             self.last_blocks.append(input_block)
 
+            print('create', input_block.__class__.__name__)
+
     def append_block(self, block: Block):
         self.blocks.append(block)
         for b in self.last_blocks:
-            if not b.is_input and self._added_gap:
+            if not isinstance(b, ImgInputBlock) and self._added_gap:
                 self.connect(b, block)
         self.last_blocks = [block]
         self._added_gap = False
@@ -93,7 +95,10 @@ class BlockSequence:
         else:
             raise Exception(f'buffer has untypical length of {len(self.buffer)}')
 
-        print('create', new_block_type.__name__.ljust(20), 'for', **self.buffer)
+        print('create', new_block_type.__name__.ljust(20), '  for  ', self.buffer[0])
+        if len(self.buffer) > 1:
+            for b in self.buffer[1:]:
+                print(' ' * 35, b)
         
         new_block = self.block_factory.create(new_block_type, len(self.blocks))
         self.append_block(new_block)
