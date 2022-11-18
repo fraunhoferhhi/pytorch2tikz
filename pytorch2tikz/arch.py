@@ -13,19 +13,18 @@ class Architecure:
 
     def __init__(self,
                  module: nn.Module,
-                 start_size=(8, 64, 64),
                  block_offset=8,
-                 scale_factor=0.8,
+                 height_depth_factor=0.8,
+                 width_factor=0.8,
+                 linear_factor=0.8,
                  image_path='./input_{i}.png',
                  ignore_layers=['batchnorm', 'flatten'],
                  colors=COLOR_VALUES) -> None:
         self._handles = []
         self.module = module
 
-        _block_factory = BlockFactory(start_size, block_offset, scale_factor)
+        _block_factory = BlockFactory(block_offset, height_depth_factor, width_factor, linear_factor, image_path)
         self._block_sequence = BlockSequence(_block_factory, ignore_layers, colors)
-
-        self.image_path = image_path
 
         self.inputs = []
 
@@ -40,7 +39,7 @@ class Architecure:
 
         modules = []
         for c in root.bfs():
-            if 'torch' in str(type(c.module)):
+            if 'torch.nn.modules' in str(type(c.module)):
                 handle = c.module.register_forward_hook(self)
                 self._handles.append(handle)
                 modules.append(c.module)
@@ -58,11 +57,11 @@ class Architecure:
         input = input[0]
     
         # get current shapes
-        in_shape = input.squeeze().shape
-        out_shape = output.squeeze().shape
+        in_shape = input.shape
+        out_shape = output.shape
         in_ptr = input.data_ptr()
         out_ptr = output.data_ptr()
-        
+
         last_in_equals_out = False
 
         if self._last_data_ptr is not None:
@@ -86,6 +85,9 @@ class Architecure:
 
         # add current module to blocks
         self._block_sequence.append(module, out_shape)
+
+        if 'pooling' in str(type(module)):
+            self._block_sequence.add_gap()
     
     def get_block(self, name: str) -> Block:
         return self._block_sequence.get_block(name)

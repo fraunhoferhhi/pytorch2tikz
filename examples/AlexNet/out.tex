@@ -382,7 +382,7 @@ name=,
 \tikzstyle{copyconnection}=[ultra thick,every node/.style={sloped,allow upside down},draw={rgb:blue,4;red,1;green,1;black,3},opacity=0.7]
 
 
-\node[canvas is zy plane at x=0] (ImgInput_1) at (0, 0, 0) {\includegraphics[width=12.8cm, height=12.8cm]{input_1.png}};
+\node[canvas is zy plane at x=0] (ImgInput_1) at (0, 0, 0) {\includegraphics[width=5.6cm, height=5.6cm]{input_1.jpg}};
 
 
 \pic[shift={(1.6, 0.0, 0.0)}] at (0, 0, 0)
@@ -391,12 +391,12 @@ name=,
         fill=\ConvColor,
         opacity=0.7,
         caption=Conv1,
-        width=2.0,
-        height=31.75,
-        depth=31.75,
+        width=8.0,
+        height=6.875,
+        depth=6.875,
         bandfill=\ActivationColor,
-        xlabel={16,},
-        zlabel=254
+        xlabel={64,},
+        zlabel=55
         }
     };
 
@@ -408,8 +408,8 @@ name=,
         opacity=0.7,
         caption= ,
         width=1.0,
-        height=22.225,
-        depth=22.225
+        height=4.203409090909091,
+        depth=4.203409090909091
         }
     };
 
@@ -420,12 +420,12 @@ name=,
         fill=\ConvColor,
         opacity=0.7,
         caption=Conv3,
-        width=2.4,
-        height=13.876771653543308,
-        depth=13.876771653543308,
+        width=15.0,
+        height=4.203409090909091,
+        depth=4.203409090909091,
         bandfill=\ActivationColor,
-        xlabel={32,},
-        zlabel=62
+        xlabel={192,},
+        zlabel=27
         }
     };
 
@@ -437,8 +437,8 @@ name=,
         opacity=0.7,
         caption= ,
         width=1,
-        height=8.488385826771653,
-        depth=8.488385826771653
+        height=2.41506734006734,
+        depth=2.41506734006734
         }
     };
 
@@ -449,142 +449,135 @@ name=,
         fill=\ConvColor,
         opacity=0.7,
         caption=Conv5,
-        width=2.4,
-        height=4.465722631445263,
-        depth=4.465722631445263,
+        width=21.0,
+        height=2.41506734006734,
+        depth=2.41506734006734,
         bandfill=\ActivationColor,
-        xlabel={32,},
-        zlabel=14
+        xlabel={384,},
+        zlabel=13
         }
     };
 
 
-\pic[shift={(0.0, 0.0, 0.0)}] at (ConvAct_5-east)
+\pic[shift={(1.6, 0.0, 0.0)}] at (ConvAct_5-east)
+    {RightBandedBox={
+        name=ConvAct_6,
+        fill=\ConvColor,
+        opacity=0.7,
+        caption=Conv6,
+        width=11.0,
+        height=2.41506734006734,
+        depth=2.41506734006734,
+        bandfill=\ActivationColor,
+        xlabel={256,},
+        zlabel=13
+        }
+    };
+
+
+\pic[shift={(0.0, 0.0, 0.0)}] at (ConvAct_6-east)
+    {RightBandedBox={
+        name=ConvAct_7,
+        fill=\ConvColor,
+        opacity=0.7,
+        caption=Conv7,
+        width=11.0,
+        height=2.41506734006734,
+        depth=2.41506734006734,
+        bandfill=\ActivationColor,
+        xlabel={256,},
+        zlabel=13
+        }
+    };
+
+
+\pic[shift={(0.0, 0.0, 0.0)}] at (ConvAct_7-east)
     {Box={
-        name=Pool_6,
+        name=Pool_8,
         fill=\PoolColor,
         opacity=0.7,
         caption= ,
         width=1,
-        height=2.5828613157226314,
-        depth=2.5828613157226314
+        height=1.2877233877233878,
+        depth=1.2877233877233878
         }
     };
 
 
-\pic[shift={(0.0, 1.6, 0.0)}] at (Pool_6-east)
+\pic[shift={(1.6, 0.0, 0.0)}] at (Pool_8-east)
     {Box={
-        name=VecInput_7,
-        fill=\VecInputColor,
+        name=Pool_9,
+        fill=\PoolColor,
         opacity=0.7,
         caption= ,
-        width=1.0,
-        height=1.0,
-        depth=4.0,
-        zlabel=32
+        width=1,
+        height=1.2877233877233878,
+        depth=1.2877233877233878
         }
     };
 
 
-\pic[shift={(1.6, 0.0, 0.0)}] at (Pool_6-east)
+\pic[shift={(1.6, 0.0, 0.0)}] at (Pool_9-east)
     {Box={
-        name=Linear_8,
+        name=Dropout_10,
+        fill=\DropoutColor,
+        opacity=0.7,
+        caption= ,
+        width=1,
+        height=1,
+        depth=230.39999999999998
+        }
+    };
+
+
+\pic[shift={(1.6, 0.0, 0.0)}] at (Dropout_10-east)
+    {RightBandedBox={
+        name=LinearAct_11,
         fill=\LinearColor,
         opacity=0.7,
-        caption=Linear8,
+        caption=Linear11,
         width=1,
-        height=1.0,
-        depth=16.0,
-        zlabel=128
+        height=1,
+        depth=216.17777777777775,
+        bandfill=\ActivationColor,
+        zlabel=4096
         }
     };
 
 
-\pic[shift={(0.0, 0.0, 0.0)}] at (Linear_8-east)
-    {Box={
-        name=Embedding_9,
-        fill=\EmbeddingColor,
-        opacity=0.7,
-        caption=Embedding9,
-        width=1,
-        height=1.0,
-        depth=16.0,
-        zlabel=128
-        }
-    };
-
-
-\pic[shift={(0.0, 1.6, 0.0)}] at (Embedding_9-east)
-    {Box={
-        name=VecInput_10,
-        fill=\VecInputColor,
-        opacity=0.7,
-        caption= ,
-        width=1.0,
-        height=1.0,
-        depth=32.0,
-        zlabel=256
-        }
-    };
-
-
-\pic[shift={(1.6, 0.0, 0.0)}] at (Embedding_9-east)
-    {Box={
-        name=LSTM_11,
-        fill=\LstmColor,
-        opacity=0.7,
-        caption=LSTM11,
-        width=1,
-        height=1.0,
-        depth=128.0,
-        zlabel=1024
-        }
-    };
-
-
-\pic[shift={(0.0, 0.0, 0.0)}] at (LSTM_11-east)
+\pic[shift={(0.0, 0.0, 0.0)}] at (LinearAct_11-east)
     {Box={
         name=Dropout_12,
         fill=\DropoutColor,
         opacity=0.7,
         caption= ,
         width=1,
-        height=1.0,
-        depth=128.0
+        height=1,
+        depth=216.17777777777775
         }
     };
 
 
-\pic[shift={(1.6, 0.0, 0.0)}] at (Dropout_12-east)
-    {Box={
-        name=Linear_13,
+\pic[shift={(0.0, 0.0, 0.0)}] at (Dropout_12-east)
+    {RightBandedBox={
+        name=LinearAct_13,
         fill=\LinearColor,
         opacity=0.7,
         caption=Linear13,
         width=1,
-        height=1.0,
-        depth=1,
-        zlabel=7
+        height=1,
+        depth=216.17777777777775,
+        bandfill=\ActivationColor,
+        zlabel=4096
         }
     };
 
 \draw [connection] (Pool_2-east) -- node {\midarrow} (ConvAct_3-west);
 \draw [connection] (Pool_4-east) -- node {\midarrow} (ConvAct_5-west);
-\draw [connection] (VecInput_7-east) -- node {\midarrow} (Embedding_9-west);
-\draw [connection] (Pool_6-east) -- node {\midarrow} (Linear_8-west);
-\draw [connection] (VecInput_10-east) -- node {\midarrow} (LSTM_11-west);
-\draw [connection] (Embedding_9-east) -- node {\midarrow} (LSTM_11-west);
-
-\coordinate (Dropout_12-Embedding_9-1) at ($ (Dropout_12-padded-east) - (0,0,-17.8) $);
-\coordinate (Dropout_12-Embedding_9-2) at ($ (Embedding_9-padded-west) - (0,0,-17.8) $);
-\draw [connection]  (Dropout_12-east) -- (Dropout_12-padded-east) -- node {\midarrow}(Dropout_12-Embedding_9-1) -- node {\midarrow}(Dropout_12-Embedding_9-2) -- node {\midarrow}(Embedding_9-padded-west) -- (Embedding_9-west);
-
-\draw [connection] (Embedding_9-east) -- node {\midarrow} (Linear_13-west);
-
-\coordinate (Linear_13-LSTM_11-1) at ($ (Linear_13-padded-east) - (0,0,-17.8) $);
-\coordinate (Linear_13-LSTM_11-2) at ($ (LSTM_11-padded-west) - (0,0,-17.8) $);
-\draw [connection]  (Linear_13-east) -- (Linear_13-padded-east) -- node {\midarrow}(Linear_13-LSTM_11-1) -- node {\midarrow}(Linear_13-LSTM_11-2) -- node {\midarrow}(LSTM_11-padded-west) -- (LSTM_11-west);
-
+\draw [connection] (ConvAct_5-east) -- node {\midarrow} (ConvAct_6-west);
+\draw [connection] (Pool_8-east) -- node {\midarrow} (Pool_9-west);
+\draw [connection] (Pool_9-east) -- node {\midarrow} (Dropout_10-west);
+\draw [connection] (Dropout_10-east) -- node {\midarrow} (LinearAct_11-west);
 
 \end{tikzpicture}
 \end{document}

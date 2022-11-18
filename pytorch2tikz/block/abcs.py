@@ -28,7 +28,7 @@ class Block(TexElement):
                  size = (10,40,40),
                  default_size = DEFAULT_VALUE * DIM_FACTOR,
                  dim = 3,
-                 scale_factor = 1,
+                 scale_factor = np.zeros(3),
                  offset = (0,0,0),
                  to = (0,0,0),
                  caption = " ",
@@ -100,7 +100,8 @@ class Block(TexElement):
             elif type(v) in [tuple, list] and isinstance(v[0], Enum):
                 v = [i.value for i in v]
             elif k in ['width', 'height', 'depth']:
-                v = v / DIM_FACTOR
+                i = ['width', 'height', 'depth'].index(k)
+                v = max(v / DIM_FACTOR + v / DIM_FACTOR * self.scale_factor[i], DEFAULT_VALUE)
 
             if type(v) in [tuple, list]:
                 args += f'\n        {k}={{{",".join(v)}}},'
@@ -118,7 +119,7 @@ class Block(TexElement):
 """
     
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}<{self.name}>'
+        return f'{self.__class__.__name__}< {self.name}, {self.size}, dim={self.dim}>'
 
 
 class FlatBlock(Block):

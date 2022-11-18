@@ -21,7 +21,7 @@ if __name__ == '__main__':
     batch = next(it)
 
     print('Build arch')
-    arch = Architecure(model)
+    arch = Architecure(model, linear_factor=0)
 
     print('Run model')
     model.eval()
@@ -29,5 +29,5 @@ if __name__ == '__main__':
 
     print('Final architecture', arch)
 
-    print('Write to test_out.tex')
+    print('Write result to test_out.tex')
     arch.save('test_out.tex')
