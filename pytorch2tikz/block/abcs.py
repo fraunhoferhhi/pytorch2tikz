@@ -12,7 +12,7 @@ class TexElement:
         return ''
     
     def __repr__(self) -> str:
-        return self.__class__.__name__
+        return f'{self.__class__.__name__}'
 
     def __str__(self) -> str:
         return self.tex
@@ -86,7 +86,6 @@ class Block(TexElement):
 
     @property
     def tex(self) -> str:
-        print(self.__class__.__name__, self.size)
         if self.dim == 3 and self.xlabel:
             self.args['xlabel'] = f'{{{self.size[0]},}}'
         if self.dim >= 2 and self.ylabel:
@@ -117,6 +116,9 @@ class Block(TexElement):
         }}
     }};
 """
+    
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}<{self.name}>'
 
 
 class FlatBlock(Block):
@@ -127,8 +129,8 @@ class Connection(TexElement):
     
     def __init__(self, block1: Block, block2: Block, backwards = False) -> None:
         super().__init__()
-        self.name1 = block1.name
-        self.name2 = block2.name
+        self.block1 = block1
+        self.block2 = block2
         self.backwards = backwards
         self.max_block = 0 if block1.size[2] > block2.size[2] else 1
         self.offset = max(block1.size[2], block2.size[2]) / DIM_FACTOR / CM_FACTOR / 2. * -1 - OFFSET
@@ -137,9 +139,13 @@ class Connection(TexElement):
     def tex(self) -> str:
         if self.backwards:
             return f"""
-\coordinate ({self.name1}-{self.name2}-1) at ($ ({self.name1}-padded-east) - (0,0,{self.offset}) $);
-\coordinate ({self.name1}-{self.name2}-2) at ($ ({self.name2}-padded-west) - (0,0,{self.offset}) $);
-\draw [connection]  ({self.name1}-east) -- ({self.name1}-padded-east) -- node {{\midarrow}}({self.name1}-{self.name2}-1) -- node {{\midarrow}}({self.name1}-{self.name2}-2) -- node {{\midarrow}}({self.name2}-padded-west) -- ({self.name2}-west);
+\coordinate ({self.block1.name}-{self.block2.name}-1) at ($ ({self.block1.name}-padded-east) - (0,0,{self.offset}) $);
+\coordinate ({self.block1.name}-{self.block2.name}-2) at ($ ({self.block2.name}-padded-west) - (0,0,{self.offset}) $);
+\draw [connection]  ({self.block1.name}-east) -- ({self.block1.name}-padded-east) -- node {{\midarrow}}({self.block1.name}-{self.block2.name}-1) -- node {{\midarrow}}({self.block1.name}-{self.block2.name}-2) -- node {{\midarrow}}({self.block2.name}-padded-west) -- ({self.block2.name}-west);
 """
         else:
-            return f"""\draw [connection] ({self.name1}-east) -- node {{\midarrow}} ({self.name2}-west);"""
+            return f"""\draw [connection] ({self.block1.name}-east) -- node {{\midarrow}} ({self.block2.name}-west);"""
+    
+    
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}<{self.block1.name}, {self.block2.name}>'

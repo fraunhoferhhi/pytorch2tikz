@@ -30,6 +30,8 @@ class BlockSequence:
 
         self._fuseable_layers = ['conv', 'linear']
         self._seen_modules: Dict[nn.Module, Block] = {}
+        self._block_map: Dict[str, Block] = {}
+        self._connection_map: Dict[str, Connection] = {}
         self._added_gap = False
         self._colors = colors
 
@@ -66,13 +68,12 @@ class BlockSequence:
         if module not in self._seen_modules.keys():
             input_block = self.block_factory.create_input(x)
             self.blocks.append(input_block)
-            if LOG_CREATED:
-                print('created', input_block.__class__.__name__.ljust(26))
             self.connect(input_block, module)
 
 
     def append_block(self, block: Block):
         self.blocks.append(block)
+        self._block_map[block.name] = block
         if self.last_block is not None and self._added_gap:
             self.connect(self.last_block, block)
 
@@ -106,8 +107,6 @@ class BlockSequence:
                         new_block = self.block_factory.create(m, len(self.blocks), out_shape)
                         self._seen_modules[m] = new_block
                         self.append_block(new_block)
-                        if LOG_CREATED:
-                            print('created', new_block.__class__.__name__.ljust(20), ' for ', m)
                 self.buffer = []
                 return
         else:
@@ -117,12 +116,6 @@ class BlockSequence:
         self.append_block(new_block)
         for mod, _ in self.buffer:
             self._seen_modules[mod] = new_block
-    
-        if LOG_CREATED:
-            print('created', new_block.__class__.__name__.ljust(20), ' for ', first_entry)
-            if len(self.buffer) > 1:
-                for b, _ in self.buffer[1:]:
-                    print(' ' * 34, b)
 
         self.buffer = []
     
@@ -131,9 +124,28 @@ class BlockSequence:
             self._added_gap = True
             self.block_factory.add_gap(axis)
 
-    def connect(self, block1: Block, block2: Union[Block, nn.Module]) -> None:
+    def connect(self, block1: Union[str, Block], block2: Union[str, Block, nn.Module]) -> None:
+        if isinstance(block1, str):
+            block1 = self._block_map[block1]
+        if isinstance(block2, str):
+            block2 = self._block_map[block2]
+
         if not isinstance(block1, ImgInputBlock):
             self.connections.append((block1, block2))
+    
+    def disconnect(self, block1: str, block2: str):
+        for c in self.connections:
+            if isinstance(c[0], nn.Module) or isinstance(c[1], nn.Module):
+                continue
+    
+            if c[0].name == block1 and c[1].name == block2:
+                self.connections.remove(c)
+    
+    def get_block(self, name: str) -> Union[Block, None]:
+        if name in self._block_map.keys():
+            return self._block_map[name]
+        else:
+            return None
     
     def _parse_connections(self) -> List[Connection]:
         connections: List[Connection] = []
@@ -150,10 +162,10 @@ class BlockSequence:
 
                 connections.append(Connection(b1, b2, id1 > id2))
                 added_connections.append(f'{b1.name}-{b2.name}')
+        self.connections = [(c.block1, c.block2) for c in connections]
         return connections
 
     def __iter__(self) -> Generator[Block, None, None]:
-
         yield Begin(self._colors)
         for b in self.blocks:
             yield b

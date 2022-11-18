@@ -17,25 +17,22 @@ class ModuleNode:
     def __repr__(self) -> str:
         return f'Module: {str(type(self.module))}'
 
-def create_graph(model: nn.Module,
-                 ignore: List[nn.Module]=[]
-    ) -> Union[ModuleNode, None]:
+def create_module_graph(model: nn.Module) -> Union[ModuleNode, None]:
 
     t = str(type(model))
     if ('loss' in t)\
-        or ('vocab' in t)\
-        or (type(model) in ignore):
+        or ('vocab' in t):
         return None
 
     root = ModuleNode(model)
     for child in model.children():
         if 'torch.nn.modules.container.Sequential' in str(type(child)):
             for child_seq in child.children():
-                child_mod = create_graph(child_seq)
+                child_mod = create_module_graph(child_seq)
                 if child_mod is not None:
                     root.children.append(child_mod)
         else:
-            child_mod = create_graph(child)
+            child_mod = create_module_graph(child)
             if child_mod is not None:
                 root.children.append(child_mod)
 

@@ -2,8 +2,7 @@ import sys
 sys.path.append('../fairseq-l-system-captioning/')
 from hhi_pl_utils import Experiment
 
-from pycore.arch import Architecure
-from pycore.module_graph import create_graph
+from pytorch2tikz.arch import Architecure
 
 if __name__ == '__main__':
     print('Load model')
@@ -22,25 +21,16 @@ if __name__ == '__main__':
     batch = next(it)
 
 
-    graph = create_graph(model)
-    arch = Architecure()
-
-    if len(handles) > 0:
-        for h in handles:
-            h.remove()
-        handles = []
-
-    modules = []
-    for c in graph.bfs():
-        if 'torch' in str(type(c.module)):
-            handles.append(c.module.register_forward_hook(arch))
-            modules.append(c.module)
-
     print('build arch')
+    arch = Architecure(model)
+
+    print('run model')
     model.eval()
     model.validation_step(batch, 0)
 
-    tex = arch.finalize()
+    print(arch)
+
+    tex = arch.get_tex()
 
     print('write to test_out.tex')
     with open('test_out.tex', 'w') as f:
