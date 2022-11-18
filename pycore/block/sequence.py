@@ -22,7 +22,7 @@ class BlockSequence:
 
         self.buffer: List[nn.Module] = []
         self.blocks: List[Block] = []
-        self.last_blocks: List[Tuple[Block, Union[None, nn.Module]]] = []
+        self.last_block: Block = None
         self.connections: List[Tuple[Block, Union[Block, nn.Module]]] = []
 
         self.block_factory = block_factory
@@ -41,16 +41,12 @@ class BlockSequence:
 
         if module in self._seen_modules.keys():
             mod_block = self._seen_modules[module]
-            for b, m in self.last_blocks:
-                if not mod_block.looped and not b.looped:
-                    if m is not None:
-                        block2 = m
-                    else:
-                        block2 = mod_block
-                    self.connect(b, block2)
+            if self.last_block is not None:
+                if not mod_block.looped and not self.last_block.looped:
+                    self.connect(self.last_block, mod_block)
 
                 mod_block.looped = True
-            self.last_blocks = [(mod_block, None)]
+            self.last_block = mod_block
 
             self.flush()
             return
@@ -70,28 +66,23 @@ class BlockSequence:
         if module not in self._seen_modules.keys():
             input_block = self.block_factory.create_input(x)
             self.blocks.append(input_block)
-            self.last_blocks.append((input_block, module))
-
             if LOG_CREATED:
-                print('created', input_block.__class__.__name__, module)
+                print('created', input_block.__class__.__name__.ljust(26))
+            self.connect(input_block, module)
+
 
     def append_block(self, block: Block):
         self.blocks.append(block)
-        for b, m in self.last_blocks:
-            if not isinstance(b, ImgInputBlock) and self._added_gap:
-                if m is not None:
-                    block2 = m
-                else:
-                    block2 = block
-                self.connect(b, block2)
-        self.last_blocks = [(block, None)]
+        if self.last_block is not None and self._added_gap:
+            self.connect(self.last_block, block)
+
+        self.last_block = block
         self._added_gap = False
 
     def flush(self):
         """translate modules in self.buffer to blocks in self.blocks and connections in self.connections"""
         if len(self.buffer) == 0:
             return
-        print('--flush')
 
         first_entry, out_shape = self.buffer[0]
 
@@ -124,7 +115,8 @@ class BlockSequence:
 
         new_block = self.block_factory.create(new_block, len(self.blocks), out_shape)
         self.append_block(new_block)
-        self._seen_modules[first_entry] = new_block
+        for mod, _ in self.buffer:
+            self._seen_modules[mod] = new_block
     
         if LOG_CREATED:
             print('created', new_block.__class__.__name__.ljust(20), ' for ', first_entry)
@@ -136,13 +128,11 @@ class BlockSequence:
     
     def add_gap(self, axis=0):
         if self._added_gap == False:
-            print('add gap\n')
             self._added_gap = True
             self.block_factory.add_gap(axis)
 
-    def connect(self, block1: Block, block2: Block) -> None:
-        if not isinstance(block1, ImgInputBlock) and\
-           not isinstance(block2, ImgInputBlock):
+    def connect(self, block1: Block, block2: Union[Block, nn.Module]) -> None:
+        if not isinstance(block1, ImgInputBlock):
             self.connections.append((block1, block2))
     
     def _parse_connections(self) -> List[Connection]:

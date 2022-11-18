@@ -16,7 +16,7 @@ class Architecure:
                  ignore_layers=['batchnorm', 'flatten'],
                  colors=COLOR_VALUES) -> None:
         self._block_factory = BlockFactory(start_size, block_offset, scale_factor)
-        self._block_sequence = BlockSequence(self._block_factory, ignore_layers)
+        self._block_sequence = BlockSequence(self._block_factory, ignore_layers, colors)
 
         self.image_path = image_path
 
@@ -58,13 +58,8 @@ class Architecure:
         if not same_depth and 'pooling' not in str(type(module)):
             self._block_sequence.add_gap()
 
-        if not module in self._block_sequence._seen_modules.keys():
-            print(module.__class__.__name__.ljust(20), in_shape, out_shape, in_ptr, out_ptr)
-
         # add current module to blocks
         self._block_sequence.append(module, out_shape)
-
-        self._tensor_size = None
 
     def finalize(self) -> str:
         out = ''

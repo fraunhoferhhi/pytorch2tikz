@@ -382,7 +382,7 @@ name=,
 \tikzstyle{copyconnection}=[ultra thick,every node/.style={sloped,allow upside down},draw={rgb:blue,4;red,1;green,1;black,3},opacity=0.7]
 
 
-\node[canvas is zy plane at x=0] (ImgInput_1) at (0, 0, 0) {\includegraphics[width=25.6cm, height=25.6cm]{input_1.png}};
+\node[canvas is zy plane at x=0] (ImgInput_1) at (0, 0, 0) {\includegraphics[width=12.8cm, height=12.8cm]{input_1.png}};
 
 
 \pic[shift={(1.6, 0.0, 0.0)}] at (0, 0, 0)
@@ -390,11 +390,13 @@ name=,
         name=ConvAct_1,
         fill=\ConvColor,
         opacity=0.7,
-        caption= ,
-        width=5.0,
-        height=79.375,
-        depth=79.375,
-        bandfill=\ActivationColor
+        caption=Conv1,
+        width=2.0,
+        height=31.75,
+        depth=31.75,
+        bandfill=\ActivationColor,
+        xlabel={16,},
+        zlabel=254
         }
     };
 
@@ -405,9 +407,9 @@ name=,
         fill=\PoolColor,
         opacity=0.7,
         caption= ,
-        width=2.5,
-        height=39.6875,
-        depth=39.6875
+        width=2.0,
+        height=15.875,
+        depth=15.875
         }
     };
 
@@ -417,11 +419,13 @@ name=,
         name=ConvAct_3,
         fill=\ConvColor,
         opacity=0.7,
-        caption= ,
-        width=10.0,
-        height=19.375,
-        depth=19.375,
-        bandfill=\ActivationColor
+        caption=Conv3,
+        width=4.0,
+        height=7.75,
+        depth=7.75,
+        bandfill=\ActivationColor,
+        xlabel={32,},
+        zlabel=62
         }
     };
 
@@ -432,9 +436,9 @@ name=,
         fill=\PoolColor,
         opacity=0.7,
         caption= ,
-        width=2.5,
-        height=9.6875,
-        depth=9.6875
+        width=2.0,
+        height=3.875,
+        depth=3.875
         }
     };
 
@@ -444,11 +448,13 @@ name=,
         name=ConvAct_5,
         fill=\ConvColor,
         opacity=0.7,
-        caption= ,
-        width=10.0,
-        height=4.375,
-        depth=4.375,
-        bandfill=\ActivationColor
+        caption=Conv5,
+        width=4.0,
+        height=1.75,
+        depth=1.75,
+        bandfill=\ActivationColor,
+        xlabel={32,},
+        zlabel=14
         }
     };
 
@@ -459,22 +465,23 @@ name=,
         fill=\PoolColor,
         opacity=0.7,
         caption= ,
-        width=2.5,
-        height=2.1875,
-        depth=2.1875
+        width=2.0,
+        height=0.875,
+        depth=0.875
         }
     };
 
 
-\pic[shift={(0.0, 14.4, 0.0)}] at (Pool_6-east)
+\pic[shift={(0.0, 1.6, 0.0)}] at (Pool_6-east)
     {Box={
         name=VecInput_7,
         fill=\VecInputColor,
         opacity=0.7,
         caption= ,
-        width=2.5,
-        height=2.5,
-        depth=10.0
+        width=2.0,
+        height=2.0,
+        depth=4.0,
+        zlabel=32
         }
     };
 
@@ -484,10 +491,11 @@ name=,
         name=Linear_8,
         fill=\LinearColor,
         opacity=0.7,
-        caption= ,
-        width=2.5,
-        height=2.5,
-        depth=40.0
+        caption=Linear8,
+        width=2.0,
+        height=2.0,
+        depth=16.0,
+        zlabel=128
         }
     };
 
@@ -497,23 +505,25 @@ name=,
         name=Embedding_9,
         fill=\EmbeddingColor,
         opacity=0.7,
-        caption= ,
-        width=2.5,
-        height=2.5,
-        depth=40.0
+        caption=Embedding9,
+        width=2.0,
+        height=2.0,
+        depth=16.0,
+        zlabel=128
         }
     };
 
 
-\pic[shift={(0.0, 14.4, 0.0)}] at (Embedding_9-east)
+\pic[shift={(0.0, 1.6, 0.0)}] at (Embedding_9-east)
     {Box={
         name=VecInput_10,
         fill=\VecInputColor,
         opacity=0.7,
         caption= ,
-        width=2.5,
-        height=2.5,
-        depth=80.0
+        width=2.0,
+        height=2.0,
+        depth=32.0,
+        zlabel=256
         }
     };
 
@@ -523,10 +533,11 @@ name=,
         name=LSTM_11,
         fill=\LstmColor,
         opacity=0.7,
-        caption= ,
-        width=2.5,
-        height=2.5,
-        depth=320.0
+        caption=LSTM11,
+        width=2.0,
+        height=2.0,
+        depth=128.0,
+        zlabel=1024
         }
     };
 
@@ -537,9 +548,9 @@ name=,
         fill=\DropoutColor,
         opacity=0.7,
         caption= ,
-        width=2.5,
-        height=2.5,
-        depth=320.0
+        width=2.0,
+        height=2.0,
+        depth=128.0
         }
     };
 
@@ -549,28 +560,29 @@ name=,
         name=Linear_13,
         fill=\LinearColor,
         opacity=0.7,
-        caption= ,
-        width=2.5,
-        height=2.5,
-        depth=2.1875
+        caption=Linear13,
+        width=2.0,
+        height=2.0,
+        depth=0.875,
+        zlabel=7
         }
     };
 
 \draw [connection] (Pool_2-east) -- node {\midarrow} (ConvAct_3-west);
 \draw [connection] (Pool_4-east) -- node {\midarrow} (ConvAct_5-west);
-\draw [connection] (Pool_6-east) -- node {\midarrow} (Linear_8-west);
 \draw [connection] (VecInput_7-east) -- node {\midarrow} (Embedding_9-west);
-\draw [connection] (Embedding_9-east) -- node {\midarrow} (LSTM_11-west);
+\draw [connection] (Pool_6-east) -- node {\midarrow} (Linear_8-west);
 \draw [connection] (VecInput_10-east) -- node {\midarrow} (LSTM_11-west);
+\draw [connection] (Embedding_9-east) -- node {\midarrow} (LSTM_11-west);
 
-\coordinate (Dropout_12-Embedding_9-1) at ($ (Dropout_12-padded-east) - (0,0,-35.0) $);
-\coordinate (Dropout_12-Embedding_9-2) at ($ (Embedding_9-padded-west) - (0,0,-35.0) $);
+\coordinate (Dropout_12-Embedding_9-1) at ($ (Dropout_12-padded-east) - (0,0,-17.8) $);
+\coordinate (Dropout_12-Embedding_9-2) at ($ (Embedding_9-padded-west) - (0,0,-17.8) $);
 \draw [connection]  (Dropout_12-east) -- (Dropout_12-padded-east) -- node {\midarrow}(Dropout_12-Embedding_9-1) -- node {\midarrow}(Dropout_12-Embedding_9-2) -- node {\midarrow}(Embedding_9-padded-west) -- (Embedding_9-west);
 
 \draw [connection] (Embedding_9-east) -- node {\midarrow} (Linear_13-west);
 
-\coordinate (Linear_13-LSTM_11-1) at ($ (Linear_13-padded-east) - (0,0,-35.0) $);
-\coordinate (Linear_13-LSTM_11-2) at ($ (LSTM_11-padded-west) - (0,0,-35.0) $);
+\coordinate (Linear_13-LSTM_11-1) at ($ (Linear_13-padded-east) - (0,0,-17.8) $);
+\coordinate (Linear_13-LSTM_11-2) at ($ (LSTM_11-padded-west) - (0,0,-17.8) $);
 \draw [connection]  (Linear_13-east) -- (Linear_13-padded-east) -- node {\midarrow}(Linear_13-LSTM_11-1) -- node {\midarrow}(Linear_13-LSTM_11-2) -- node {\midarrow}(LSTM_11-padded-west) -- (LSTM_11-west);
 
 

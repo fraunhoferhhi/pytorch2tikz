@@ -6,7 +6,7 @@ from typing import Tuple, Union, Iterable
 from .abcs import Block
 from .inputs import ImgInputBlock, VecInputBlock
 from ..mapping import BLOCK_MAPPING
-from ..constants import DIM_FACTOR
+from ..constants import DEFAULT_VALUE
 
 class BlockFactory:
     def __init__(self,
@@ -71,7 +71,7 @@ class BlockFactory:
         else:
             to = self.to
     
-        current_offset = np.array((-self.current_offset[0], self.size[1] + self.offset, 0.0))
+        current_offset = np.array((-self.current_offset[0], self.offset, 0.0))
 
         offset = tuple(self.current_offset + current_offset)
 
@@ -88,7 +88,7 @@ class BlockFactory:
             new_block = VecInputBlock(self.last_block_id + 1,
                                       to=to,
                                       offset=offset,
-                                      size=np.array([2, 2, x.shape[-1]]))
+                                      size=np.array([DEFAULT_VALUE, DEFAULT_VALUE, x.shape[-1]]))
         return new_block
     
     def add_gap(self, axis=0):

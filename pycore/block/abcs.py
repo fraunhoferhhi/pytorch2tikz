@@ -3,7 +3,7 @@ from typing import Iterable, Tuple
 import numpy as np
 from abc import abstractmethod
 
-from ..constants import DIM_FACTOR, DAMPING_FACTOR, CM_FACTOR, OFFSET, COLOR, PICTYPE
+from ..constants import DEFAULT_VALUE, DIM_FACTOR, CM_FACTOR, OFFSET, COLOR, PICTYPE
 
 class TexElement:
     @property
@@ -26,14 +26,15 @@ class Block(TexElement):
                  pictype = PICTYPE.BOX,
                  opacity = 0.7,
                  size = (10,40,40),
-                 default_size = 2 * DIM_FACTOR,
+                 default_size = DEFAULT_VALUE * DIM_FACTOR,
                  dim = 3,
                  scale_factor = 1,
                  offset = (0,0,0),
                  to = (0,0,0),
                  caption = " ",
-                 xlabel: Iterable[int] = None,
-                 zlabel: int = None,
+                 xlabel = True,
+                 ylabel = False,
+                 zlabel = True,
                  is_input = False) -> None:
         super().__init__()
         self.name = name
@@ -42,6 +43,9 @@ class Block(TexElement):
         self.to = to
         self.is_input = is_input
         self.looped = False
+        self.xlabel = xlabel
+        self.ylabel = ylabel
+        self.zlabel = zlabel
 
         self.args = {
             "fill": fill,
@@ -58,13 +62,7 @@ class Block(TexElement):
         
         if bandfill is not None:
             self.args["bandfill"] = bandfill
-        
-        if xlabel is not None:
-            if type(xlabel) in [tuple, list]:
-                self.size[0] = [self.size[0]] * len(xlabel)
-            self.args['xlabel'] = xlabel
-        if zlabel is not None:
-            self.args['zlabel'] = zlabel
+
     @property
     def dim(self) -> int:
         return self._dim
@@ -88,6 +86,14 @@ class Block(TexElement):
 
     @property
     def tex(self) -> str:
+        print(self.__class__.__name__, self.size)
+        if self.dim == 3 and self.xlabel:
+            self.args['xlabel'] = f'{{{self.size[0]},}}'
+        if self.dim >= 2 and self.ylabel:
+            self.args['ylabel'] = f'{self.size[1]}'
+        if self.dim >= 1 and self.zlabel:
+            self.args['zlabel'] = f'{self.size[2]}'
+
         args = ''
         for k, v in self.args.items():
             if isinstance(v, Enum):
@@ -95,7 +101,7 @@ class Block(TexElement):
             elif type(v) in [tuple, list] and isinstance(v[0], Enum):
                 v = [i.value for i in v]
             elif k in ['width', 'height', 'depth']:
-                v = v / DIM_FACTOR / DAMPING_FACTOR
+                v = v / DIM_FACTOR
 
             if type(v) in [tuple, list]:
                 args += f'\n        {k}={{{",".join(v)}}},'
@@ -125,7 +131,7 @@ class Connection(TexElement):
         self.name2 = block2.name
         self.backwards = backwards
         self.max_block = 0 if block1.size[2] > block2.size[2] else 1
-        self.offset = max(block1.size[2], block2.size[2]) / DAMPING_FACTOR / DIM_FACTOR / CM_FACTOR / 2. * -1 - OFFSET
+        self.offset = max(block1.size[2], block2.size[2]) / DIM_FACTOR / CM_FACTOR / 2. * -1 - OFFSET
 
     @property
     def tex(self) -> str:

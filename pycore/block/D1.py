@@ -8,6 +8,7 @@ class LinearBlock(Block):
         
         super().__init__(f'Linear_{name}',
                          fill=COLOR.LINEAR,
+                         caption=f'Linear{name}',
                          **kwargs)
 
 class LinearActivationBlock(Block):
@@ -19,6 +20,7 @@ class LinearActivationBlock(Block):
                          fill=COLOR.LINEAR,
                          bandfill=COLOR.ACTIVATION,
                          pictype=PICTYPE.RIGHTBANDEDBOX,
+                         caption=f'Linear{name}',
                          **kwargs)
 
 class EmbeddingBlock(Block):
@@ -28,6 +30,7 @@ class EmbeddingBlock(Block):
 
         super().__init__(f'Embedding_{name}',
                          fill=COLOR.EMBEDDING,
+                         caption=f'Embedding{name}',
                          **kwargs)
 
 class LSTMBlock(Block):
@@ -37,4 +40,5 @@ class LSTMBlock(Block):
 
         super().__init__(f'LSTM_{name}',
                          fill=COLOR.LSTM,
+                         caption=f'LSTM{name}',
                          **kwargs)
