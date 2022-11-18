@@ -20,18 +20,14 @@ if __name__ == '__main__':
     it = iter(e.data.train_dataloader())
     batch = next(it)
 
-
-    print('build arch')
+    print('Build arch')
     arch = Architecure(model)
 
-    print('run model')
+    print('Run model')
     model.eval()
     model.validation_step(batch, 0)
 
-    print(arch)
+    print('Final architecture', arch)
 
-    tex = arch.get_tex()
-
-    print('write to test_out.tex')
-    with open('test_out.tex', 'w') as f:
-        f.write(tex)
+    print('Write to test_out.tex')
+    arch.save('test_out.tex')

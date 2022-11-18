@@ -96,6 +96,10 @@ class Architecure:
             out += f'\n{str(b)}'
         return out
     
+    def save(self, file_path: str):
+        with open(file_path, 'w') as f:
+            f.write(self.get_tex())
+    
     def __repr__(self) -> str:
         out = 'Architecture[\n'
         for b in self._block_sequence:
