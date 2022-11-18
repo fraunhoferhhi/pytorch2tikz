@@ -38,7 +38,7 @@ if __name__ == '__main__':
     print('Load model')
     model = alexnet(True)
     model.eval()
-    model.to()
+    model.to(device)
 
     print('Load data')
     val_resize_size, val_crop_size = 256, 224
