@@ -1,4 +1,4 @@
-from typing import List, Generator, Dict
+from typing import List, Generator, Dict, Tuple
 from torch import nn, Tensor
 import numpy as np
 
@@ -9,6 +9,8 @@ from .D1 import LinearActivationBlock
 from .inputs import ImgInputBlock
 from .tex import Begin, End
 from ..constants import COLOR_VALUES
+
+LOG_CREATED = True
 
 class BlockSequence:
 
@@ -30,19 +32,19 @@ class BlockSequence:
         self._added_gap = False
         self._colors = colors
 
-    def append(self, module: nn.Module, dim):
+    def append(self, module: nn.Module, output_shape: Tuple[int], dim: int):
         """appends the modules buffer if module should not be ignored ans was not seen before. If module is not fuseable call self.flush()"""
         for l in self.ignore_layers:
             if l in str(type(module)):
                 return
-        if module  not in self._seen_modules.keys():
-            print("==>> module: ", module)
+        # if module  not in self._seen_modules.keys():
+        #     print("==>> module: ", module, self.last_blocks)
 
         if module in self._seen_modules.keys():
             mod_block = self._seen_modules[module]
             for b in self.last_blocks:
                 if not mod_block.looped and not b.looped:
-                    print("==>> self.last_blocks: ", self.last_blocks)
+                    # print("==>> self.last_blocks: ", self.last_blocks)
                     self.connect(b, mod_block, backwards=True)
 
                 mod_block.looped = True
@@ -51,7 +53,7 @@ class BlockSequence:
             self.flush()
             return
 
-        self.buffer.append((module, dim))
+        self.buffer.append((module, output_shape, dim))
         
         fuseable = False
         for l in self._fuseable_layers:
@@ -68,7 +70,8 @@ class BlockSequence:
             self.blocks.append(input_block)
             self.last_blocks.append(input_block)
 
-            print('created', input_block.__class__.__name__)
+            if LOG_CREATED:
+                print('created', input_block.__class__.__name__)
 
     def append_block(self, block: Block):
         self.blocks.append(block)
@@ -83,7 +86,7 @@ class BlockSequence:
         if len(self.buffer) == 0:
             return
 
-        first_entry, dim = self.buffer[0]
+        first_entry, out_shape, dim = self.buffer[0]
 
         # if buffer has only one entry add block
         if len(self.buffer) == 1:
@@ -101,9 +104,9 @@ class BlockSequence:
             elif fuse_linear and fuseable:
                 new_block = LinearActivationBlock
             else:
-                for m, dim in self.buffer:
+                for m, out_shape, dim in self.buffer:
                     if m not in self._seen_modules.keys():
-                        new_block = self.block_factory.create(m, len(self.blocks), dim)
+                        new_block = self.block_factory.create(m, len(self.blocks), out_shape)
                         self._seen_modules[m] = new_block
                         self.append_block(new_block)
                 self.buffer = []
@@ -111,14 +114,15 @@ class BlockSequence:
         else:
             raise Exception(f'buffer has untypical length of {len(self.buffer)}')
 
-        new_block = self.block_factory.create(new_block, len(self.blocks), dim)
+        new_block = self.block_factory.create(new_block, len(self.blocks), out_shape)
         self.append_block(new_block)
         self._seen_modules[first_entry] = new_block
     
-        # print('created', new_block.__class__.__name__.ljust(20), ' for ', first_entry)
-        # if len(self.buffer) > 1:
-        #     for b, _ in self.buffer[1:]:
-        #         print(' ' * 34, b)
+        if LOG_CREATED:
+            print('created', new_block.__class__.__name__.ljust(20), ' for ', first_entry)
+            if len(self.buffer) > 1:
+                for b, _ in self.buffer[1:]:
+                    print(' ' * 34, b)
 
         self.buffer = []
 
@@ -135,7 +139,7 @@ class BlockSequence:
         if not isinstance(block1, ImgInputBlock) and\
            not isinstance(block2, ImgInputBlock) and\
            not self.has_connection(block1, block2):
-            self.connections.append(Connection(block1, block2, backwards, self.block_factory.size[1]))
+            self.connections.append(Connection(block1, block2, backwards))
 
     def has_connection(self, block1, block2) -> bool:
         new_conn = Connection(block1, block2)

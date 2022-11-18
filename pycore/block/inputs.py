@@ -1,6 +1,6 @@
 
 from .abcs import Block
-from ..constants import CM_FACTOR, COLOR
+from ..constants import CM_FACTOR, COLOR, DIM_FACTOR
 
 class ImgInputBlock(Block):
 
@@ -11,7 +11,7 @@ class ImgInputBlock(Block):
     @property
     def tex(self) -> str:
         return f"""
-\\node[canvas is zy plane at x=0] ({self.name}) at {self.to} {{\includegraphics[width={self.args['depth'] / CM_FACTOR}cm, height={self.args['height'] / CM_FACTOR}cm]{{{self.file_path}}}}};
+\\node[canvas is zy plane at x=0] ({self.name}) at {self.to} {{\includegraphics[width={self.args['depth'] / DIM_FACTOR / CM_FACTOR}cm, height={self.args['height'] / DIM_FACTOR / CM_FACTOR}cm]{{{self.file_path}}}}};
 """
 
 class VecInputBlock(Block):

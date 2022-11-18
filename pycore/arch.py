@@ -57,15 +57,19 @@ class Architecure:
         # if not same_depth add gap
         if not same_depth and 'pooling' not in str(type(module)):
             self._block_sequence.add_gap()
-            if len(out_shape) == len(in_shape) and last_in_equals_out:
-                scale = np.array(out_shape) / np.array(in_shape)
+            # if len(out_shape) == len(in_shape) and last_in_equals_out:
+            #     scale = np.array(out_shape) / np.array(in_shape)
 
-                if len(scale) > 3:
-                    scale = scale[1:]
-                    self._block_sequence.scale(scale)
+            #     if len(scale) > 3:
+            #         scale = scale[1:]
+            #         self._block_sequence.scale(scale)
+            #     elif len(scale) < 3:
+            #         print(scale, in_shape, out_shape)
+            #         scale = np.array([1,1, 1 / scale[-1]])
+            #         self._block_sequence.scale(scale)
 
         # add current module to blocks
-        self._block_sequence.append(module, len(in_shape) - 1)
+        self._block_sequence.append(module, out_shape, len(in_shape) - 1)
 
         self._tensor_size = None
 

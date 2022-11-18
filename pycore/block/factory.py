@@ -1,11 +1,12 @@
 import numpy as np
 from torch import Tensor, nn
 from torchvision.utils import save_image
-from typing import Tuple, Union
+from typing import Tuple, Union, Iterable
 
 from .abcs import Block
 from .inputs import ImgInputBlock, VecInputBlock
 from ..mapping import BLOCK_MAPPING
+from ..constants import DIM_FACTOR
 
 class BlockFactory:
     def __init__(self,
@@ -33,17 +34,29 @@ class BlockFactory:
         
         raise Exception(f'could not found Block for {module}')
 
-    def create(self, block: Union[type, Block], i: int, dim=None) -> Block:
+    def create(self, block: Union[type, Block], i: int, output_shape: Iterable[int]) -> Block:
         kwargs = {}
-        if not isinstance(block, type):
-            block, dim = self._get_block_type(block, dim)
+        dim = None
 
-        if dim is not None:
-            kwargs['dim'] = dim
+        # set dim and if block is not a type get its type
+        if not isinstance(block, type):
+            block, dim = self._get_block_type(block)
+        
+        if dim is None:
+            if len(output_shape) < 3:
+                dim = 1
+            else:
+                dim = len(output_shape) - 1
+        
+        # set size
+        size = np.array([2,2,2])
+        size[-dim:] = np.array(output_shape)[-dim:]
+
+        kwargs['dim'] = dim
         
         new_block: Block = block(
                  i,
-                 size = self.size,
+                 size = size,
                  offset = self.current_offset,
                  to = self.to, **kwargs)
 
@@ -71,12 +84,12 @@ class BlockFactory:
                                       im_path,
                                       to=to,
                                       offset=offset,
-                                      size=self.size)
+                                      size=np.array(x.shape[-3:]))
         else:
             new_block = VecInputBlock(self.last_block_id + 1,
                                       to=to,
                                       offset=offset,
-                                      size=self.size)
+                                      size=np.array([2, 2, x.shape[-1]]))
         return new_block
     
     def add_gap(self, axis=0):

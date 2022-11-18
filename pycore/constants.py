@@ -35,3 +35,7 @@ class PICTYPE(Enum):
     BALL = "Ball"
 
 CM_FACTOR = 5
+
+DIM_FACTOR = 4
+DAMPING_FACTOR = 0.8
+OFFSET = 3

@@ -28,5 +28,5 @@ class NormBlock(FlatBlock):
 
 class PoolBlock(FlatBlock):
 
-    def __init__(self, name, scale_factor=0.8, **kwargs) -> None:
-        super().__init__(f'Pool_{name}', fill=COLOR.POOL, scale_factor=scale_factor, **kwargs)
+    def __init__(self, name, **kwargs) -> None:
+        super().__init__(f'Pool_{name}', fill=COLOR.POOL, **kwargs)

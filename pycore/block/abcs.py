@@ -3,7 +3,7 @@ from typing import Iterable, Tuple
 import numpy as np
 from abc import abstractmethod
 
-from ..constants import CM_FACTOR, COLOR, PICTYPE
+from ..constants import DIM_FACTOR, DAMPING_FACTOR, CM_FACTOR, OFFSET, COLOR, PICTYPE
 
 class TexElement:
     @property
@@ -26,7 +26,7 @@ class Block(TexElement):
                  pictype = PICTYPE.BOX,
                  opacity = 0.7,
                  size = (10,40,40),
-                 default_size = 2,
+                 default_size = 2 * DIM_FACTOR,
                  dim = 3,
                  scale_factor = 1,
                  offset = (0,0,0),
@@ -82,7 +82,7 @@ class Block(TexElement):
     def size(self, size: Iterable[int]):
         for i, dim in enumerate(['width', 'height', 'depth']):
             if self.default_size[i] is None:
-                self.args[dim] = size[i] * self.scale_factor
+                self.args[dim] = size[i]
             else:
                 self.args[dim] = self.default_size[i]
 
@@ -94,6 +94,8 @@ class Block(TexElement):
                 v = v.value
             elif type(v) in [tuple, list] and isinstance(v[0], Enum):
                 v = [i.value for i in v]
+            elif k in ['width', 'height', 'depth']:
+                v = v / DIM_FACTOR / DAMPING_FACTOR
 
             if type(v) in [tuple, list]:
                 args += f'\n        {k}={{{",".join(v)}}},'
@@ -117,20 +119,21 @@ class FlatBlock(Block):
 
 class Connection(TexElement):
     
-    def __init__(self, block1: Block, block2: Block, backwards = False, offset=5) -> None:
+    def __init__(self, block1: Block, block2: Block, backwards = False) -> None:
         super().__init__()
         self.name1 = block1.name
         self.name2 = block2.name
         self.backwards = backwards
-        self.offset = offset / 2. / CM_FACTOR * -1
+        self.max_block = 0 if block1.size[2] > block2.size[2] else 1
+        self.offset = max(block1.size[2], block2.size[2]) / DAMPING_FACTOR / DIM_FACTOR / CM_FACTOR / 2. * -1 - OFFSET
 
     @property
     def tex(self) -> str:
         if self.backwards:
             return f"""
-\path ({self.name1}-padded-neareast) -- ({self.name1}-padded-fareast) coordinate[pos={self.offset}] ({self.name1}-nearnear);
-\path ({self.name2}-padded-nearwest) -- ({self.name2}-padded-farwest) coordinate[pos={self.offset}] ({self.name2}-nearnear);
-\draw [connection]  ({self.name1}-east) -- ({self.name1}-padded-east) -- node {{\midarrow}}({self.name1}-nearnear) -- node {{\midarrow}}({self.name2}-nearnear) -- node {{\midarrow}}({self.name2}-padded-west) -- ({self.name2}-west);
+\coordinate ({self.name1}-{self.name2}-1) at ($ ({self.name1}-padded-east) - (0,0,{self.offset}) $);
+\coordinate ({self.name1}-{self.name2}-2) at ($ ({self.name2}-padded-west) - (0,0,{self.offset}) $);
+\draw [connection]  ({self.name1}-east) -- ({self.name1}-padded-east) -- node {{\midarrow}}({self.name1}-{self.name2}-1) -- node {{\midarrow}}({self.name1}-{self.name2}-2) -- node {{\midarrow}}({self.name2}-padded-west) -- ({self.name2}-west);
 """
         else:
             return f"""\draw [connection] ({self.name1}-east) -- node {{\midarrow}} ({self.name2}-west);"""

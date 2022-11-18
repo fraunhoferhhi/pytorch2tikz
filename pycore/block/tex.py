@@ -91,8 +91,7 @@ class Begin(TexElement):
 \documentclass[border=8pt, multi, tikz]{{standalone}}
 \\usepackage{{import}}
 \\usetikzlibrary{{quotes,arrows.meta}}
-\\usetikzlibrary{{positioning}}
-\\usetikzlibrary{{3d}} %for including external image
+\\usetikzlibrary{{positioning, calc, 3d}}
 
 {self.colors}
 
