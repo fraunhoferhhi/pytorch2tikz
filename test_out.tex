@@ -544,7 +544,7 @@ name=,
     };
 
 
-\pic[shift={(3.2, 0.0, 0.0)}] at (Dropout_12-east)
+\pic[shift={(1.6, 0.0, 0.0)}] at (Dropout_12-east)
     {Box={
         name=Linear_13,
         fill=\LinearColor,
@@ -559,18 +559,18 @@ name=,
 \draw [connection] (Pool_2-east) -- node {\midarrow} (ConvAct_3-west);
 \draw [connection] (Pool_4-east) -- node {\midarrow} (ConvAct_5-west);
 \draw [connection] (Pool_6-east) -- node {\midarrow} (Linear_8-west);
-\draw [connection] (VecInput_7-east) -- node {\midarrow} (Linear_8-west);
+\draw [connection] (VecInput_7-east) -- node {\midarrow} (Embedding_9-west);
 \draw [connection] (Embedding_9-east) -- node {\midarrow} (LSTM_11-west);
 \draw [connection] (VecInput_10-east) -- node {\midarrow} (LSTM_11-west);
 
-\coordinate (Dropout_12-Embedding_9-1) at ($ (Dropout_12-padded-east) - (0,0,-34.0) $);
-\coordinate (Dropout_12-Embedding_9-2) at ($ (Embedding_9-padded-west) - (0,0,-34.0) $);
+\coordinate (Dropout_12-Embedding_9-1) at ($ (Dropout_12-padded-east) - (0,0,-35.0) $);
+\coordinate (Dropout_12-Embedding_9-2) at ($ (Embedding_9-padded-west) - (0,0,-35.0) $);
 \draw [connection]  (Dropout_12-east) -- (Dropout_12-padded-east) -- node {\midarrow}(Dropout_12-Embedding_9-1) -- node {\midarrow}(Dropout_12-Embedding_9-2) -- node {\midarrow}(Embedding_9-padded-west) -- (Embedding_9-west);
 
 \draw [connection] (Embedding_9-east) -- node {\midarrow} (Linear_13-west);
 
-\coordinate (Linear_13-LSTM_11-1) at ($ (Linear_13-padded-east) - (0,0,-34.0) $);
-\coordinate (Linear_13-LSTM_11-2) at ($ (LSTM_11-padded-west) - (0,0,-34.0) $);
+\coordinate (Linear_13-LSTM_11-1) at ($ (Linear_13-padded-east) - (0,0,-35.0) $);
+\coordinate (Linear_13-LSTM_11-2) at ($ (LSTM_11-padded-west) - (0,0,-35.0) $);
 \draw [connection]  (Linear_13-east) -- (Linear_13-padded-east) -- node {\midarrow}(Linear_13-LSTM_11-1) -- node {\midarrow}(Linear_13-LSTM_11-2) -- node {\midarrow}(LSTM_11-padded-west) -- (LSTM_11-west);
 
 

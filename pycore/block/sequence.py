@@ -1,6 +1,7 @@
-from typing import List, Generator, Dict, Tuple
+from typing import List, Generator, Dict, Tuple, Union
 from torch import nn, Tensor
 import numpy as np
+import re
 
 from .factory import BlockFactory
 from .abcs import Block, Connection
@@ -16,13 +17,13 @@ class BlockSequence:
 
     def __init__(self,
                  block_factory: BlockFactory,
-                 ignore_layers: List[str]=['batchnorm'],
+                 ignore_layers: List[str]=['batchnorm', 'flatten'],
                  colors = COLOR_VALUES) -> None:
 
         self.buffer: List[nn.Module] = []
         self.blocks: List[Block] = []
-        self.last_blocks: List[Block] = []
-        self.connections: List[Connection] = []
+        self.last_blocks: List[Tuple[Block, Union[None, nn.Module]]] = []
+        self.connections: List[Tuple[Block, Union[Block, nn.Module]]] = []
 
         self.block_factory = block_factory
         self.ignore_layers = ignore_layers
@@ -32,28 +33,29 @@ class BlockSequence:
         self._added_gap = False
         self._colors = colors
 
-    def append(self, module: nn.Module, output_shape: Tuple[int], dim: int):
+    def append(self, module: nn.Module, output_shape: Tuple[int]):
         """appends the modules buffer if module should not be ignored ans was not seen before. If module is not fuseable call self.flush()"""
         for l in self.ignore_layers:
             if l in str(type(module)):
                 return
-        # if module  not in self._seen_modules.keys():
-        #     print("==>> module: ", module, self.last_blocks)
 
         if module in self._seen_modules.keys():
             mod_block = self._seen_modules[module]
-            for b in self.last_blocks:
+            for b, m in self.last_blocks:
                 if not mod_block.looped and not b.looped:
-                    # print("==>> self.last_blocks: ", self.last_blocks)
-                    self.connect(b, mod_block, backwards=True)
+                    if m is not None:
+                        block2 = m
+                    else:
+                        block2 = mod_block
+                    self.connect(b, block2)
 
                 mod_block.looped = True
-            self.last_blocks = [mod_block]
-            
+            self.last_blocks = [(mod_block, None)]
+
             self.flush()
             return
 
-        self.buffer.append((module, output_shape, dim))
+        self.buffer.append((module, output_shape))
         
         fuseable = False
         for l in self._fuseable_layers:
@@ -68,25 +70,30 @@ class BlockSequence:
         if module not in self._seen_modules.keys():
             input_block = self.block_factory.create_input(x)
             self.blocks.append(input_block)
-            self.last_blocks.append(input_block)
+            self.last_blocks.append((input_block, module))
 
             if LOG_CREATED:
-                print('created', input_block.__class__.__name__)
+                print('created', input_block.__class__.__name__, module)
 
     def append_block(self, block: Block):
         self.blocks.append(block)
-        for b in self.last_blocks:
+        for b, m in self.last_blocks:
             if not isinstance(b, ImgInputBlock) and self._added_gap:
-                self.connect(b, block)
-        self.last_blocks = [block]
+                if m is not None:
+                    block2 = m
+                else:
+                    block2 = block
+                self.connect(b, block2)
+        self.last_blocks = [(block, None)]
         self._added_gap = False
 
     def flush(self):
         """translate modules in self.buffer to blocks in self.blocks and connections in self.connections"""
         if len(self.buffer) == 0:
             return
+        print('--flush')
 
-        first_entry, out_shape, dim = self.buffer[0]
+        first_entry, out_shape = self.buffer[0]
 
         # if buffer has only one entry add block
         if len(self.buffer) == 1:
@@ -99,16 +106,17 @@ class BlockSequence:
             fuseable = (fuse_conv or fuse_linear) and 'activation' in str(type(self.buffer[1][0]))
 
             if fuse_conv and fuseable:
-                _, dim = self.block_factory._get_block_type(first_entry)
                 new_block = ConvActivationBlock
             elif fuse_linear and fuseable:
                 new_block = LinearActivationBlock
             else:
-                for m, out_shape, dim in self.buffer:
+                for m, out_shape in self.buffer:
                     if m not in self._seen_modules.keys():
                         new_block = self.block_factory.create(m, len(self.blocks), out_shape)
                         self._seen_modules[m] = new_block
                         self.append_block(new_block)
+                        if LOG_CREATED:
+                            print('created', new_block.__class__.__name__.ljust(20), ' for ', m)
                 self.buffer = []
                 return
         else:
@@ -125,33 +133,40 @@ class BlockSequence:
                     print(' ' * 34, b)
 
         self.buffer = []
-
-
-    def scale(self, scale: np.ndarray):
-        if len(self.blocks) > 1:
-            self.block_factory.scale(scale)
     
     def add_gap(self, axis=0):
-        self._added_gap = True
-        self.block_factory.add_gap(axis)
+        if self._added_gap == False:
+            print('add gap\n')
+            self._added_gap = True
+            self.block_factory.add_gap(axis)
 
-    def connect(self, block1, block2, backwards=False) -> None:
+    def connect(self, block1: Block, block2: Block) -> None:
         if not isinstance(block1, ImgInputBlock) and\
-           not isinstance(block2, ImgInputBlock) and\
-           not self.has_connection(block1, block2):
-            self.connections.append(Connection(block1, block2, backwards))
+           not isinstance(block2, ImgInputBlock):
+            self.connections.append((block1, block2))
+    
+    def _parse_connections(self) -> List[Connection]:
+        connections: List[Connection] = []
+        added_connections: List[str] = []
+        for b1, b2 in self.connections:
+            if isinstance(b1, nn.Module):
+                b1 = self._seen_modules[b1]
+            if isinstance(b2, nn.Module):
+                b2 = self._seen_modules[b2]
+            
+            if f'{b1.name}-{b2.name}' not in added_connections:
+                id1 = int(re.match('^\w+_(\d+)', b1.name).group(1))
+                id2 = int(re.match('^\w+_(\d+)', b2.name).group(1))
 
-    def has_connection(self, block1, block2) -> bool:
-        new_conn = Connection(block1, block2)
-        for c in self.connections:
-            if c.name1 == new_conn.name1 and c.name2 == new_conn.name2:
-                return True
-        return False
+                connections.append(Connection(b1, b2, id1 > id2))
+                added_connections.append(f'{b1.name}-{b2.name}')
+        return connections
 
     def __iter__(self) -> Generator[Block, None, None]:
+
         yield Begin(self._colors)
         for b in self.blocks:
             yield b
-        for c in self.connections:
+        for c in self._parse_connections():
             yield c
         yield End()

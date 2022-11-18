@@ -71,10 +71,9 @@ class BlockFactory:
         else:
             to = self.to
     
-        self.current_offset += np.array((-self.current_offset[0], self.size[1] + self.offset, 0.0))
+        current_offset = np.array((-self.current_offset[0], self.size[1] + self.offset, 0.0))
 
-        offset = tuple(self.current_offset)
-        self.current_offset = np.zeros(3)
+        offset = tuple(self.current_offset + current_offset)
 
         if x.ndim > 3:
             im_path = self.image_path.replace('{i}', str(self.last_block_id + 1))
@@ -96,6 +95,3 @@ class BlockFactory:
         offset = np.zeros(3)
         offset[axis] = self.offset
         self.current_offset = self.current_offset + offset
-    
-    def scale(self, scale: np.ndarray):
-        self.size = self.size * (scale / self.scale_factor)
