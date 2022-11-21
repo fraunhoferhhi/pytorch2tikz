@@ -69,6 +69,7 @@ class BlockSequence:
         if module not in self._seen_modules.keys():
             input_block = self.block_factory.create_input(x)
             self.blocks.append(input_block)
+            self._block_map[input_block.name] = input_block
             self.connect(input_block, module)
 
 
