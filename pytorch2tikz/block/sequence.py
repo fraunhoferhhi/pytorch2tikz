@@ -182,8 +182,8 @@ class BlockSequence:
 
         self._connection_buffer = []
     
-    def __getitem__(self, key) -> Union[Block, Tuple[Block, Block]]:
-        print(key)
+    def __getitem__(self, key) -> Block:
+        return self.get_block(key)
 
     def __iter__(self) -> Generator[Block, None, None]:
         self.flush_connections()
