@@ -24,7 +24,6 @@ class BlockSequence:
         self.buffer: List[nn.Module] = []
         self.blocks: List[Block] = []
         self.last_block: Block = None
-        self.connections: List[Tuple[Block, Union[Block, nn.Module]]] = []
 
         self.block_factory = block_factory
         self.ignore_layers = ignore_layers
@@ -33,6 +32,7 @@ class BlockSequence:
         self._seen_modules: Dict[nn.Module, Block] = {}
         self._block_map: Dict[str, Block] = {}
         self._connection_map: Dict[str, Connection] = {}
+        self._connection_buffer: List[Tuple[Block, Union[Block, nn.Module]]] = []
         self._added_gap = False
         self._colors = colors
 
@@ -83,7 +83,7 @@ class BlockSequence:
         self._added_gap = False
 
     def flush(self):
-        """translate modules in self.buffer to blocks in self.blocks and connections in self.connections"""
+        """translate modules in self.buffer to blocks in self.blocks and connections in self._connection_buffer"""
         if len(self.buffer) == 0:
             return
 
@@ -126,22 +126,17 @@ class BlockSequence:
             self._added_gap = True
             self.block_factory.add_gap(axis)
 
-    def connect(self, block1: Union[str, Block], block2: Union[str, Block, nn.Module]) -> None:
-        if isinstance(block1, str):
-            block1 = self._block_map[block1]
-        if isinstance(block2, str):
-            block2 = self._block_map[block2]
-
+    def connect(self, block1: Union[str, Block], block2: Union[str, Block, nn.Module], conn_type: Connection = None) -> None:
         if not isinstance(block1, ImgInputBlock):
-            self.connections.append((block1, block2))
+            if isinstance(block1, str):
+                block1 = self._resolve_block(block1)
+            if isinstance(block2, str):
+                block2 = self._resolve_block(block2)
     
-    def disconnect(self, block1: str, block2: str):
-        for c in self.connections:
-            if isinstance(c[0], nn.Module) or isinstance(c[1], nn.Module):
-                continue
+            self._connection_buffer.append((block1, block2, conn_type))
     
-            if c[0].name == block1 and c[1].name == block2:
-                self.connections.remove(c)
+    def disconnect(self, block1: Union[str, Block], block2: Union[str, Block]):
+        del self._connection_map[f'{self._resolve_block(block1).name}-{self._resolve_block(block2).name}']
     
     def get_block(self, name: str) -> Union[Block, None]:
         if name in self._block_map.keys():
@@ -149,33 +144,53 @@ class BlockSequence:
         else:
             return None
     
-    def _parse_connections(self) -> List[Connection]:
-        connections: List[Connection] = []
-        added_connections: List[str] = []
-        for b1, b2 in self.connections:
+    def remove_block(self, block: Union[str, Block]):
+        block = self._resolve_block(block)
+        self.blocks.remove(block)
+        del self._block_map[block.name]
+        self.flush_connections()
+        
+        for c in self._connection_map:
+            if c.block1.name == block.name or c.block2.name == block.name:
+                self.disconnect(c.block1, c.block2)
+
+    
+    def _resolve_block(self, block: Union[Block, str]) -> Block:
+        if isinstance(block, str):
+            return self.get_block(block)
+        else:
+            return block
+
+    def flush_connections(self) -> List[Connection]:
+        for b1, b2, conn_type in self._connection_buffer:
             if isinstance(b1, nn.Module):
                 b1 = self._seen_modules[b1]
             if isinstance(b2, nn.Module):
                 b2 = self._seen_modules[b2]
             
-            if f'{b1.name}-{b2.name}' not in added_connections:
+            if conn_type is None:
                 id1 = int(re.match('^\w+_(\d+)', b1.name).group(1))
                 id2 = int(re.match('^\w+_(\d+)', b2.name).group(1))
 
                 if id1 > id2:
-                    conn = LoopConnection(b1, b2)
+                    conn_type = LoopConnection
                 else:
-                    conn = Connection(b1, b2)
+                    conn_type = Connection
 
-                connections.append(conn)
-                added_connections.append(f'{b1.name}-{b2.name}')
-        self.connections = [(c.block1, c.block2) for c in connections]
-        return connections
+            if f'{b1.name}-{b2.name}' not in self._connection_map.keys():
+                self._connection_map[f'{b1.name}-{b2.name}'] = conn_type(b1, b2)
+
+        self._connection_buffer = []
+    
+    def __getitem__(self, key) -> Union[Block, Tuple[Block, Block]]:
+        print(key)
 
     def __iter__(self) -> Generator[Block, None, None]:
+        self.flush_connections()
+        
         yield Begin(self._colors)
         for b in self.blocks:
             yield b
-        for c in self._parse_connections():
+        for c in self._connection_map.values():
             yield c
         yield End()

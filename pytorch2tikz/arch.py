@@ -3,7 +3,7 @@ import numpy as np
 from torch import Tensor, nn
 import torch
 
-from .block.abcs import Block
+from .block.abcs import Block, Connection
 from .block.factory import BlockFactory
 from .block.sequence import BlockSequence
 from .constants import COLOR_VALUES
@@ -89,8 +89,20 @@ class Architecture:
         if 'pooling' in str(type(module)):
             self._block_sequence.add_gap()
     
+    def remove_block(self, name: str):
+        self._block_sequence.remove_block(name)
+
     def get_block(self, name: str) -> Block:
         return self._block_sequence.get_block(name)
+    
+    def remove_connection(self, block1: Union[Block, str], block2: Union[Block, str]):
+        self._block_sequence.disconnect(block1, block2)
+    
+    def connect(self, block1: Union[Block, str], block2: Union[Block, str], conn_type=Connection):
+        self._block_sequence.connect(block1, block2, conn_type)
+    
+    def disconnect(self, block1: Union[Block, str], block2: Union[Block, str]):
+        self._block_sequence.disconnect(block1, block2)
 
     def get_tex(self) -> str:
         out = ''
