@@ -5,7 +5,7 @@ from ..constants import CM_FACTOR, COLOR, DIM_FACTOR
 class ImgInputBlock(Block):
 
     def __init__(self, name, file_path, **kwargs) -> None:
-        super().__init__(f'ImgInput_{name}', **kwargs, is_input=True)
+        super().__init__(f'ImgInput_{name}', **kwargs)
         self.file_path = file_path
     
     @property
@@ -17,5 +17,5 @@ class ImgInputBlock(Block):
 class VecInputBlock(Block):
 
     def __init__(self, name, **kwargs) -> None:
-        super().__init__(f'VecInput_{name}', COLOR.VEC_INPUT, is_input=True, dim=1, **kwargs)
+        super().__init__(f'VecInput_{name}', COLOR.VEC_INPUT, dim=1, **kwargs)
 

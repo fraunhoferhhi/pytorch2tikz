@@ -21,7 +21,7 @@ if __name__ == '__main__':
     batch = next(it)
 
     print('Build arch')
-    arch = Architecure(model, linear_factor=0)
+    arch = Architecure(model, linear_factor=0, height_depth_factor=1)
 
     print('Run model')
     model.eval()

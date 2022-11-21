@@ -1,5 +1,6 @@
+from __future__ import annotations
 from enum import Enum
-from typing import Iterable, Tuple
+from typing import Iterable, Tuple, Union
 import numpy as np
 from abc import abstractmethod
 
@@ -26,22 +27,20 @@ class Block(TexElement):
                  pictype = PICTYPE.BOX,
                  opacity = 0.7,
                  size = (10,40,40),
-                 default_size = DEFAULT_VALUE * DIM_FACTOR,
+                 default_size = DEFAULT_VALUE,
                  dim = 3,
                  scale_factor = np.zeros(3),
-                 offset = (0,0,0),
-                 to = (0,0,0),
+                 offset: Tuple[int] = (0,0,0),
+                 to: Union[Tuple[int], Block] = (0,0,0),
                  caption = " ",
                  xlabel = True,
                  ylabel = False,
-                 zlabel = True,
-                 is_input = False) -> None:
+                 zlabel = True) -> None:
         super().__init__()
         self.name = name
         self.pictype = pictype
         self.offset = np.array(offset)
         self.to = to
-        self.is_input = is_input
         self.looped = False
         self.xlabel = xlabel
         self.ylabel = ylabel
@@ -82,7 +81,7 @@ class Block(TexElement):
             if self.default_size[i] is None:
                 self.args[dim] = size[i]
             else:
-                self.args[dim] = self.default_size[i]
+                self.args[dim] = self.default_size[i] * DIM_FACTOR
 
     @property
     def tex(self) -> str:
@@ -128,24 +127,14 @@ class FlatBlock(Block):
 
 class Connection(TexElement):
     
-    def __init__(self, block1: Block, block2: Block, backwards = False) -> None:
+    def __init__(self, block1: Block, block2: Block) -> None:
         super().__init__()
         self.block1 = block1
         self.block2 = block2
-        self.backwards = backwards
-        self.max_block = 0 if block1.size[2] > block2.size[2] else 1
-        self.offset = max(block1.size[2], block2.size[2]) / DIM_FACTOR / CM_FACTOR / 2. * -1 - OFFSET
 
     @property
     def tex(self) -> str:
-        if self.backwards:
-            return f"""
-\coordinate ({self.block1.name}-{self.block2.name}-1) at ($ ({self.block1.name}-padded-east) - (0,0,{self.offset}) $);
-\coordinate ({self.block1.name}-{self.block2.name}-2) at ($ ({self.block2.name}-padded-west) - (0,0,{self.offset}) $);
-\draw [connection]  ({self.block1.name}-east) -- ({self.block1.name}-padded-east) -- node {{\midarrow}}({self.block1.name}-{self.block2.name}-1) -- node {{\midarrow}}({self.block1.name}-{self.block2.name}-2) -- node {{\midarrow}}({self.block2.name}-padded-west) -- ({self.block2.name}-west);
-"""
-        else:
-            return f"""\draw [connection] ({self.block1.name}-east) -- node {{\midarrow}} ({self.block2.name}-west);"""
+        return f"""\draw [connection] ({self.block1.name}-east) -- node {{\midarrow}} ({self.block2.name}-west);"""
     
     
     def __repr__(self) -> str:

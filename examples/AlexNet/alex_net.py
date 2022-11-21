@@ -61,7 +61,7 @@ if __name__ == '__main__':
     )
     
     print('Init architecture')
-    arch = Architecure(model, image_path=osp.join(file_path, 'input_{i}.jpg'), height_depth_factor=0.5, width_factor=0.5)
+    arch = Architecure(model, image_path=osp.join(file_path, 'input_{i}.jpg'), height_depth_factor=0.5, width_factor=0.5, linear_factor=0.9)
 
     print('Run model')
     with torch.inference_mode():

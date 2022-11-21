@@ -8,6 +8,7 @@ from .abcs import Block, Connection
 from .Dn import ConvActivationBlock
 from .D1 import LinearActivationBlock
 from .inputs import ImgInputBlock
+from .connections import LoopConnection
 from .tex import Begin, End
 from ..constants import COLOR_VALUES
 
@@ -160,7 +161,12 @@ class BlockSequence:
                 id1 = int(re.match('^\w+_(\d+)', b1.name).group(1))
                 id2 = int(re.match('^\w+_(\d+)', b2.name).group(1))
 
-                connections.append(Connection(b1, b2, id1 > id2))
+                if id1 > id2:
+                    conn = LoopConnection(b1, b2)
+                else:
+                    conn = Connection(b1, b2)
+
+                connections.append(conn)
                 added_connections.append(f'{b1.name}-{b2.name}')
         self.connections = [(c.block1, c.block2) for c in connections]
         return connections
