@@ -1,0 +1,5 @@
+# publish
+
+```bash
+flit publish
+```
