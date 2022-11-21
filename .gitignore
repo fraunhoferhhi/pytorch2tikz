@@ -2,6 +2,10 @@
 *.log
 *.gz
 
+test_out.tex
+test.py
+dev.ipynb
+
 __pycache__
 books
 project
