@@ -9,7 +9,7 @@ import os.path as osp
 file_path = osp.dirname(osp.abspath(__file__))
 sys.path.append(osp.join(file_path, '../../'))
 
-from pytorch2tikz import Architecure
+from pytorch2tikz import Architecture
 
 class ClassificationPresetEval:
     def __init__(
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     )
     
     print('Init architecture')
-    arch = Architecure(model, image_path=osp.join(file_path, 'input_{i}.jpg'), height_depth_factor=0.5, width_factor=0.5, linear_factor=0.8)
+    arch = Architecture(model, image_path=osp.join(file_path, 'input_{i}.jpg'), height_depth_factor=0.5, width_factor=0.5, linear_factor=0.8)
 
     print('Run model')
     with torch.inference_mode():

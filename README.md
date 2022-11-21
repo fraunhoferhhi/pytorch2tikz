@@ -21,7 +21,7 @@ Generate Tikz figures for neural networks implemented in pytorch. It uses LaTeX 
 ## Example
 
 ```python
-from pytorch2tikz import Architecure
+from pytorch2tikz import Architecture
 
 print('Load model')
 model = vgg16(True)
@@ -30,7 +30,7 @@ print('Load data')
 ...
 
 print('Init architecture')
-arch = Architecure(model)
+arch = Architecture(model)
 
 print('Run model')
 with torch.inference_mode():
@@ -52,7 +52,7 @@ pip install pytorch2tikz
 ### Architecture
 
 ```python
-Architecure(module: nn.Module,
+Architecture(module: nn.Module,
             block_offset=8,
             height_depth_factor=0.8,
             width_factor=0.8,

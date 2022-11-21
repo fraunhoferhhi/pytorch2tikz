@@ -9,7 +9,7 @@ from .block.sequence import BlockSequence
 from .constants import COLOR_VALUES
 from .module_graph import create_module_graph
 
-class Architecure:
+class Architecture:
 
     def __init__(self,
                  module: nn.Module,
