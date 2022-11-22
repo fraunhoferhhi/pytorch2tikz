@@ -7,5 +7,6 @@ name = "pytorch2tikz"
 authors = [{name = "Jannes Magnusson", email = "jannes@magnusson.berlin"}]
 readme = "README.md"
 license = {file = "LICENSE"}
-classifiers = ["License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)"]
+classifiers = ["License :: Fraunhofer HHI Copyright"]
 dynamic = ["version", "description"]
+repository = "https://github.com/fraunhoferhhi/pytorch2tikz"
