@@ -9,3 +9,4 @@ readme = "README.md"
 license = {file = "LICENSE"}
 dynamic = ["version", "description"]
 repository = "https://github.com/fraunhoferhhi/pytorch2tikz"
+homepage = "https://github.com/fraunhoferhhi/pytorch2tikz"
